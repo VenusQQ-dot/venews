@@ -19,7 +19,7 @@ export default function Header() {
                 Agent × 100
               </span>
               <span className="text-[10px] text-[var(--text-muted)] leading-tight hidden sm:block">
-                小白也能学会的 AI 教程
+                小白也能學會的 AI 教程
               </span>
             </div>
           </Link>
@@ -30,7 +30,7 @@ export default function Header() {
               href="/"
               className="px-3 py-2 rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)] transition-all"
             >
-              首页
+              首頁
             </Link>
             {categories.slice(0, 4).map(cat => (
               <Link
@@ -46,6 +46,7 @@ export default function Header() {
               className="px-3 py-2 rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)] transition-all"
             >
               全部教程
+
             </Link>
           </nav>
 
@@ -66,7 +67,7 @@ export default function Header() {
             <button
               className="md:hidden p-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)] transition-all"
               onClick={() => setMenuOpen(!menuOpen)}
-              aria-label="菜单"
+              aria-label="菜單"
             >
               {menuOpen ? (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,7 +90,7 @@ export default function Header() {
               onClick={() => setMenuOpen(false)}
               className="block px-3 py-2 rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)] transition-all"
             >
-              首页
+              首頁
             </Link>
             {categories.map(cat => (
               <Link

@@ -143,9 +143,9 @@ export default async function TutorialPage({ params }: Props) {
             <div className="flex flex-wrap items-center gap-2 mb-4">
               <span
                 className={`text-xs px-2.5 py-1 rounded-full border ${
-                  tutorial.difficulty === '入门'
+                  tutorial.difficulty === '入門'
                     ? 'bg-green-500/10 text-green-400 border-green-500/20'
-                    : tutorial.difficulty === '进阶'
+                    : tutorial.difficulty === '進階'
                     ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
                     : 'bg-red-500/10 text-red-400 border-red-500/20'
                 }`}

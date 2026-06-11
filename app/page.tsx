@@ -2,35 +2,35 @@ import Link from 'next/link';
 import { categories } from './data/tutorials';
 
 const stats = [
-  { label: '教程数量', value: '40+' },
+  { label: '教程數量', value: '40+' },
   { label: 'MCP 工具', value: '20+' },
-  { label: '实战案例', value: '15+' },
-  { label: '学习者', value: '5K+' },
+  { label: '實戰案例', value: '15+' },
+  { label: '學習者', value: '5K+' },
 ];
 
 const featuredTutorials = [
   {
     icon: '🍌',
     title: 'Nano Banana MCP 配置指南',
-    desc: '3分钟完成 AI 生图配置',
+    desc: '3分鐘完成 AI 生圖配置',
     href: '/nanobanana/nanobanana-mcp-setup',
-    tag: '入门必读',
+    tag: '入門必讀',
     tagColor: 'bg-green-500/10 text-green-400 border-green-500/20',
   },
   {
     icon: '🧠',
-    title: '一个简单问法让AI回答质量翻倍',
-    desc: '掌握提示词技巧，解锁AI全部潜力',
+    title: '一個簡單問法讓AI回答質量翻倍',
+    desc: '掌握提示詞技巧，解鎖AI全部潛力',
     href: '/best-minds/index',
-    tag: '强烈推荐',
+    tag: '強烈推薦',
     tagColor: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
   },
   {
     icon: '🎭',
-    title: 'Playwright MCP 内容分析案例',
-    desc: '网页抓取、PDF分析、文件整理全自动',
-    href: '/playwright-mcp/Playwright-MCP内容分析案例',
-    tag: '进阶实战',
+    title: 'Playwright MCP 內容分析案例',
+    desc: '網頁抓取、PDF分析、文件整理全自動',
+    href: '/playwright-mcp/Playwright-MCP內容分析案例',
+    tag: '進階實戰',
     tagColor: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
   },
 ];
@@ -71,7 +71,7 @@ export default function HomePage() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-muted)] text-sm mb-8">
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            持续更新中 · {totalTutorials} 个实战教程
+            持續更新中 · {totalTutorials} 個實戰教程
           </div>
 
           {/* Title */}
@@ -83,13 +83,13 @@ export default function HomePage() {
 
           {/* Subtitle */}
           <p className="text-xl sm:text-2xl text-[var(--text-secondary)] mb-4 font-medium">
-            小白也能学会的 AI 教程
+            小白也能學會的 AI 教程
           </p>
 
           <p className="text-base sm:text-lg text-[var(--text-muted)] max-w-2xl mx-auto mb-10 leading-relaxed">
-            通过真实案例学习 AI Agent 和 MCP 工具。
+            通過真實案例學習 AI Agent 和 MCP 工具。
             <br className="hidden sm:block" />
-            零基础也能快速上手，让 AI 真正提升你的效率。
+            零基礎也能快速上手，讓 AI 真正提升你的效率。
           </p>
 
           {/* CTAs */}
@@ -98,7 +98,7 @@ export default function HomePage() {
               href="#all-tutorials"
               className="btn-glow inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[var(--accent)] hover:bg-[#6d28d9] text-white font-semibold transition-all text-sm sm:text-base"
             >
-              开始学习
+              開始學習
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
@@ -107,7 +107,7 @@ export default function HomePage() {
               href="/best-minds/index"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-[var(--border)] hover:border-[var(--border-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium transition-all text-sm sm:text-base"
             >
-              🧠 AI 提问技巧
+              🧠 AI 提問技巧
             </Link>
           </div>
 
@@ -129,7 +129,7 @@ export default function HomePage() {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-center gap-3 mb-6">
             <span className="text-xl">⭐</span>
-            <h2 className="text-xl font-bold text-[var(--text-primary)]">精选推荐</h2>
+            <h2 className="text-xl font-bold text-[var(--text-primary)]">精選推薦</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {featuredTutorials.map(item => (
@@ -159,7 +159,7 @@ export default function HomePage() {
             <span className="text-xl">📚</span>
             <h2 className="text-xl font-bold text-[var(--text-primary)]">全部教程</h2>
             <span className="ml-auto text-sm text-[var(--text-muted)]">
-              {categories.length} 个分类 · {totalTutorials} 篇教程
+              {categories.length} 個分類 · {totalTutorials} 篇教程
             </span>
           </div>
 
@@ -196,9 +196,9 @@ export default function HomePage() {
                         <div className="flex items-center gap-2 mt-1">
                           <span
                             className={`text-[10px] px-1.5 py-0.5 rounded border ${
-                              tutorial.difficulty === '入门'
+                              tutorial.difficulty === '入門'
                                 ? 'bg-green-500/10 text-green-400 border-green-500/20'
-                                : tutorial.difficulty === '进阶'
+                                : tutorial.difficulty === '進階'
                                 ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
                                 : 'bg-red-500/10 text-red-400 border-red-500/20'
                             }`}
@@ -245,16 +245,16 @@ export default function HomePage() {
             />
             <div className="relative z-10">
               <h2 className="text-2xl sm:text-3xl font-bold mb-4 gradient-text">
-                开始你的 AI 之旅
+                開始你的 AI 之旅
               </h2>
               <p className="text-[var(--text-secondary)] mb-8 max-w-md mx-auto">
-                从第一个 MCP 配置开始，一步步解锁 AI 的无限可能
+                從第一個 MCP 配置開始，一步步解鎖 AI 的無限可能
               </p>
               <Link
                 href="/nanobanana/nanobanana-mcp-setup"
                 className="btn-glow inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-[var(--accent)] hover:bg-[#6d28d9] text-white font-semibold transition-all"
               >
-                从这里开始 →
+                從這裡開始 →
               </Link>
             </div>
           </div>
