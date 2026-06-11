@@ -1,0 +1,32 @@
+name: Daily AI Digest
+
+on:
+  schedule:
+    # 23:30 UTC = 早上 07:30 台北時間（UTC+8）。
+    # GitHub 排程可能延遲數分鐘到數十分鐘，故提前排在 7:30。
+    - cron: "30 23 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  send-digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install digest dependencies
+        run: npm install --no-save --no-package-lock rss-parser nodemailer @anthropic-ai/sdk
+
+      - name: Build and send digest
+        run: node scripts/daily-ai-digest.mjs
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          DIGEST_TO: ${{ vars.DIGEST_TO }}
