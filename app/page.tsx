@@ -1,5 +1,9 @@
 import NewsFeed from './components/NewsFeed';
-import { articles, categories, getCategory } from './data/news';
+import { categories, getCategory } from './data/news';
+import { fetchPublishedArticles } from '../lib/articles';
+
+// 發布新文章後,首頁最慢一分鐘內更新
+export const revalidate = 60;
 
 function formatFullTime(iso: string) {
   return new Intl.DateTimeFormat('zh-TW', {
@@ -12,8 +16,18 @@ function formatFullTime(iso: string) {
   }).format(new Date(iso));
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const articles = await fetchPublishedArticles();
   const featured = articles.find(a => a.featured) ?? articles[0];
+
+  if (!featured) {
+    return (
+      <p className="mx-auto max-w-6xl px-4 py-24 text-center text-sm text-[var(--ink-faint)]">
+        目前還沒有已發布的新聞,到 /admin 發布第一篇吧。
+      </p>
+    );
+  }
+
   const rest = articles.filter(a => a.slug !== featured.slug);
   const featuredCat = getCategory(featured.category);
 
