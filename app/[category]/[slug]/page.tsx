@@ -12,6 +12,21 @@ export async function generateStaticParams() {
   );
 }
 
+function escapeHtml(s: string) {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// 只允許 http(s) 與站內相對連結，阻擋 javascript: 等危險協議
+function sanitizeUrl(url: string) {
+  const trimmed = url.trim();
+  if (/^(https?:\/\/|\/|#)/i.test(trimmed)) return trimmed;
+  return '#';
+}
+
 function renderMarkdown(text: string) {
   if (!text) return '';
   const lines = text.trim().split('\n');
@@ -28,7 +43,7 @@ function renderMarkdown(text: string) {
         codeLines = [];
       } else {
         result.push(
-          `<pre><code class="language-${codeLang}">${codeLines.map(l => l.replace(/</g, '&lt;').replace(/>/g, '&gt;')).join('\n')}</code></pre>`
+          `<pre><code class="language-${escapeHtml(codeLang)}">${codeLines.map(escapeHtml).join('\n')}</code></pre>`
         );
         inCode = false;
         codeLang = '';
@@ -41,26 +56,30 @@ function renderMarkdown(text: string) {
       continue;
     }
 
+    const esc = escapeHtml(line);
+
     if (line.startsWith('### ')) {
-      result.push(`<h3>${line.slice(4)}</h3>`);
+      result.push(`<h3>${esc.slice(4)}</h3>`);
     } else if (line.startsWith('## ')) {
-      result.push(`<h2>${line.slice(3)}</h2>`);
+      result.push(`<h2>${esc.slice(3)}</h2>`);
     } else if (line.startsWith('# ')) {
-      result.push(`<h1>${line.slice(2)}</h1>`);
+      result.push(`<h1>${esc.slice(2)}</h1>`);
     } else if (line.startsWith('> ')) {
-      result.push(`<blockquote>${line.slice(2)}</blockquote>`);
+      result.push(`<blockquote>${esc.slice(2)}</blockquote>`);
     } else if (line.match(/^\d+\. /)) {
-      result.push(`<li>${line.replace(/^\d+\. /, '')}</li>`);
+      result.push(`<li>${esc.replace(/^\d+\. /, '')}</li>`);
     } else if (line.startsWith('- ') || line.startsWith('* ')) {
-      result.push(`<li>${line.slice(2)}</li>`);
+      result.push(`<li>${esc.slice(2)}</li>`);
     } else if (line.trim() === '') {
       result.push('<br/>');
     } else {
-      // inline formatting
-      const formatted = line
+      // inline formatting（在已跳脫的文字上套用）
+      const formatted = esc
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
         .replace(/`(.+?)`/g, '<code>$1</code>')
-        .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>');
+        .replace(/\[(.+?)\]\((.+?)\)/g, (_m, label, url) =>
+          `<a href="${sanitizeUrl(url)}" rel="noopener noreferrer">${label}</a>`
+        );
       result.push(`<p>${formatted}</p>`);
     }
   }
