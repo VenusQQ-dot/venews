@@ -91,6 +91,12 @@
       "skillPath": "skills/iris-development/SKILL.md",
       "computedHash": "677663bc77ea89c1ba7de7ced05a2d0f16bbe7b5e75efa47a10a40091eeb039d"
     },
+    "notebooklm": {
+      "source": "PleasePrompto/notebooklm-skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "2902e68071784c81597644309206b6b127e49b62a145cc9cbbbb73bfaeeeb86c"
+    },
     "pdf": {
       "source": "anthropics/skills",
       "sourceType": "github",
