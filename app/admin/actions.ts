@@ -2,23 +2,31 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
-import { ADMIN_COOKIE, sessionToken, verifySessionToken } from '../../lib/adminAuth';
+import { cookies, headers } from 'next/headers';
+import { ADMIN_COOKIE, sessionToken } from '../../lib/adminAuth';
+import { requireAdmin } from '../../lib/requireAdmin';
+import { clearFailures, isLocked, recordFailure } from '../../lib/loginThrottle';
 import { getSupabaseAdmin } from '../../lib/supabase';
 
-async function requireAdmin() {
-  const store = await cookies();
-  const ok = await verifySessionToken(store.get(ADMIN_COOKIE)?.value);
-  if (!ok) redirect('/admin/login');
+async function clientKey(): Promise<string> {
+  const hdrs = await headers();
+  return hdrs.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
 }
 
 export async function login(formData: FormData) {
+  const key = await clientKey();
+  if (isLocked(key)) {
+    redirect('/admin/login?error=locked');
+  }
+
   const password = String(formData.get('password') ?? '');
   const expected = process.env.ADMIN_PASSWORD;
 
   if (!expected || password !== expected) {
-    redirect('/admin/login?error=1');
+    recordFailure(key);
+    redirect(isLocked(key) ? '/admin/login?error=locked' : '/admin/login?error=1');
   }
+  clearFailures(key);
 
   const token = await sessionToken();
   const store = await cookies();

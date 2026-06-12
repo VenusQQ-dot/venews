@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getCategory } from '../data/news';
 import { DbArticle } from '../../lib/articles';
 import { adminConfigured, getSupabaseAdmin } from '../../lib/supabase';
+import { requireAdmin } from '../../lib/requireAdmin';
 import { deleteArticle, logout, setStatus } from './actions';
 
 export const metadata = { title: '文章管理 — VeNews' };
@@ -20,6 +21,7 @@ function fmt(iso: string | null) {
 }
 
 export default async function AdminPage() {
+  await requireAdmin();
   if (!adminConfigured()) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-20">

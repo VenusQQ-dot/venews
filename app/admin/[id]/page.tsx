@@ -3,6 +3,7 @@ import ArticleForm from '../ArticleForm';
 import { updateArticle } from '../actions';
 import { DbArticle } from '../../../lib/articles';
 import { adminConfigured, getSupabaseAdmin } from '../../../lib/supabase';
+import { requireAdmin } from '../../../lib/requireAdmin';
 
 export const metadata = { title: '編輯文章 — VeNews' };
 export const dynamic = 'force-dynamic';
@@ -14,6 +15,7 @@ export default async function EditArticlePage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ error?: string }>;
 }) {
+  await requireAdmin();
   const { id } = await params;
   const { error } = await searchParams;
   const numericId = Number(id);

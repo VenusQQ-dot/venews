@@ -37,7 +37,11 @@ export default async function LoginPage({
               className="rounded-lg border border-[var(--hairline)] bg-[var(--card)] px-3 py-2 text-[var(--ink)] outline-none focus:border-[var(--seal)]"
             />
           </label>
-          {error && <p className="text-sm text-[var(--seal)]">密碼錯誤,請再試一次。</p>}
+          {error === 'locked' ? (
+            <p className="text-sm text-[var(--seal)]">嘗試次數過多,請五分鐘後再試。</p>
+          ) : error ? (
+            <p className="text-sm text-[var(--seal)]">密碼錯誤,請再試一次。</p>
+          ) : null}
           <button
             type="submit"
             className="rounded-lg bg-[var(--seal)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"

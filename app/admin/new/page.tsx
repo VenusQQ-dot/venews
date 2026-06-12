@@ -1,5 +1,6 @@
 import ArticleForm from '../ArticleForm';
 import { createArticle } from '../actions';
+import { requireAdmin } from '../../../lib/requireAdmin';
 
 export const metadata = { title: '新增文章 — VeNews' };
 
@@ -8,6 +9,7 @@ export default async function NewArticlePage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
+  await requireAdmin();
   const { error } = await searchParams;
 
   return (
