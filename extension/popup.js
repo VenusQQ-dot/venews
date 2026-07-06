@@ -4,12 +4,28 @@ const searchInput = document.getElementById("search");
 
 let allEntries = [];
 
+// 先觸發語音清單載入(getVoices 第一次呼叫常回傳空陣列)
+if ("speechSynthesis" in window) speechSynthesis.getVoices();
+
 function escapeHtml(s) {
   return String(s ?? "").replace(
     /[&<>"']/g,
     (c) =>
       ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]
   );
+}
+
+function speakGerman(text) {
+  if (!("speechSynthesis" in window) || !text) return;
+  speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "de-DE";
+  const deVoice = speechSynthesis
+    .getVoices()
+    .find((v) => v.lang.toLowerCase().startsWith("de"));
+  if (deVoice) utterance.voice = deVoice;
+  utterance.rate = 0.9;
+  speechSynthesis.speak(utterance);
 }
 
 function render(entries) {
@@ -45,6 +61,8 @@ function render(entries) {
           <div class="entry-head">
             <span>
               <span class="lemma">${escapeHtml(headword)}</span>
+              <button class="speak" data-speak="${escapeHtml(e.lemma || e.word)}" title="朗讀">🔊</button>
+              ${e.pronunciation ? `<span class="ipa">${escapeHtml(e.pronunciation)}</span>` : ""}
               ${e.partOfSpeech ? `<span class="pos">${escapeHtml(e.partOfSpeech)}</span>` : ""}
             </span>
             <button class="delete" data-id="${escapeHtml(e.id)}">刪除</button>
@@ -57,6 +75,10 @@ function render(entries) {
         </div>`;
     })
     .join("");
+
+  listEl.querySelectorAll(".speak").forEach((btn) => {
+    btn.addEventListener("click", () => speakGerman(btn.dataset.speak));
+  });
 
   listEl.querySelectorAll(".delete").forEach((btn) => {
     btn.addEventListener("click", async () => {
@@ -82,7 +104,7 @@ function applyFilter() {
 
 function toCsv(entries) {
   const headers = [
-    "word", "lemma", "partOfSpeech", "genderArticle", "plural", "conjugation",
+    "word", "lemma", "pronunciation", "partOfSpeech", "genderArticle", "plural", "conjugation",
     "meaning", "grammarNotes", "example", "exampleTranslation",
     "context", "url", "title", "savedAt",
   ];

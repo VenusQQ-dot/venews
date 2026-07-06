@@ -4,6 +4,9 @@
   const MAX_SELECTION_LENGTH = 300;
   const MAX_CONTEXT_LENGTH = 600;
 
+  // 先觸發語音清單載入(getVoices 第一次呼叫常回傳空陣列)
+  if ("speechSynthesis" in window) speechSynthesis.getVoices();
+
   let host = null;
   let shadow = null;
   let triggerBtn = null;
@@ -60,6 +63,12 @@
       .save:hover { background: #30305a; }
       .save[disabled] { background: #9a9; cursor: default; }
       .muted { color: #888; font-size: 12px; }
+      .ipa { color: #667; font-size: 13px; margin-left: 6px; }
+      .speak {
+        background: none; border: none; cursor: pointer;
+        font-size: 15px; padding: 0 2px; vertical-align: middle;
+      }
+      .speak:hover { opacity: .7; }
       .error { color: #b00020; }
       .link { color: #2244cc; cursor: pointer; text-decoration: underline; background: none; border: none; font-size: 13px; padding: 0; }
       .spinner { color: #666; }
@@ -211,6 +220,19 @@
     }
   }
 
+  function speakGerman(text) {
+    if (!("speechSynthesis" in window) || !text) return;
+    speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "de-DE";
+    const deVoice = speechSynthesis
+      .getVoices()
+      .find((v) => v.lang.toLowerCase().startsWith("de"));
+    if (deVoice) utterance.voice = deVoice;
+    utterance.rate = 0.9;
+    speechSynthesis.speak(utterance);
+  }
+
   function renderResult(req, r) {
     if (!card) return;
     const optionalRow = (label, value) =>
@@ -221,6 +243,8 @@
     card.innerHTML = `
       <div>
         <span class="word">${escapeHtml(r.lemma || req.text)}</span>
+        <button class="speak" id="speak-word" title="朗讀單字">🔊</button>
+        ${r.pronunciation ? `<span class="ipa">${escapeHtml(r.pronunciation)}</span>` : ""}
         ${r.part_of_speech ? `<span class="pos">${escapeHtml(r.part_of_speech)}</span>` : ""}
         ${r.gender_article ? `<span class="pos">${escapeHtml(r.gender_article)}</span>` : ""}
       </div>
@@ -235,7 +259,7 @@
       ${r.grammar_notes ? `<div class="grammar"><span class="label">文法</span>${escapeHtml(r.grammar_notes)}</div>` : ""}
       ${
         r.example_sentence
-          ? `<div class="example">${escapeHtml(r.example_sentence)}<br><span class="example-zh">${escapeHtml(r.example_translation)}</span></div>`
+          ? `<div class="example">${escapeHtml(r.example_sentence)} <button class="speak" id="speak-example" title="朗讀例句">🔊</button><br><span class="example-zh">${escapeHtml(r.example_translation)}</span></div>`
           : ""
       }
       <div class="footer">
@@ -243,6 +267,13 @@
         <span class="muted" id="save-status"></span>
       </div>
     `;
+    card
+      .querySelector("#speak-word")
+      .addEventListener("click", () => speakGerman(r.lemma || req.text));
+    const speakExample = card.querySelector("#speak-example");
+    if (speakExample) {
+      speakExample.addEventListener("click", () => speakGerman(r.example_sentence));
+    }
     card.querySelector("#save-btn").addEventListener("click", async (e) => {
       const btn = e.currentTarget;
       btn.disabled = true;
@@ -258,6 +289,7 @@
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       word: req.text,
       lemma: r.lemma || "",
+      pronunciation: r.pronunciation || "",
       partOfSpeech: r.part_of_speech || "",
       genderArticle: r.gender_article || "",
       plural: r.plural || "",

@@ -19,6 +19,10 @@ const EXPLANATION_SCHEMA = {
       type: "string",
       description: "單字原形(Grundform)。選取為句子時填核心動詞或關鍵字的原形。",
     },
+    pronunciation: {
+      type: "string",
+      description: "lemma 的 IPA 音標(標準德語發音),例如 '[ˈhɔʏzɐ]';選取為整句時填空字串",
+    },
     part_of_speech: {
       type: "string",
       description: "詞性,以繁體中文表示,例如:名詞、動詞、形容詞、分離動詞",
@@ -55,6 +59,7 @@ const EXPLANATION_SCHEMA = {
   required: [
     "selection_type",
     "lemma",
+    "pronunciation",
     "part_of_speech",
     "gender_article",
     "plural",
@@ -71,6 +76,7 @@ const SYSTEM_PROMPT = `你是一位經驗豐富的德文老師,學生的母語�
 學生會傳給你他在網頁上選取的德文文字,以及該文字周圍的上下文。
 請根據「上下文中的實際用法」解釋,而不是字典式的所有義項:
 - 解釋一律使用繁體中文(德文詞彙本身保留德文)。
+- pronunciation 填 lemma 的標準德語(Hochdeutsch)IPA 音標,含重音記號。
 - 名詞務必標明性別冠詞與複數;動詞務必給出三態變化。
 - grammar_notes 聚焦於這段上下文裡值得學的文法點(格位、語序、從句、虛擬式等),簡潔但具體。
 - 若選取的是片語或整句,lemma 填句中最值得學的核心字之原形,並在 grammar_notes 解析句構。`;
