@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Header from "./components/Header";
+import FlowingBackground from "./components/FlowingBackground";
 
 export const metadata: Metadata = {
   title: "VeNews 鳴新聞 — 今日要聞、科技、財經、文化",
@@ -36,9 +37,10 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen">
+        <FlowingBackground />
         <Header />
-        <main>{children}</main>
-        <footer className="mt-20 border-t border-[var(--hairline)]">
+        <main className="relative z-10">{children}</main>
+        <footer className="relative z-10 mt-20 border-t border-[var(--hairline)]">
           <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
             <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
               <div className="flex items-center gap-3">

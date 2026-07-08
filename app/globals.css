@@ -19,6 +19,12 @@
   --card: #fdfcfa;         /* 卡片紙 */
   --card-hover: #ffffff;
 
+  /* 流沙四色(淺色模式:低飽和,襯紙面) */
+  --sand-1: rgba(197, 57, 47, 0.16);   /* 朱紅 */
+  --sand-2: rgba(217, 164, 65, 0.18);  /* 金沙 */
+  --sand-3: rgba(61, 90, 128, 0.15);   /* 黛藍 */
+  --sand-4: rgba(78, 141, 124, 0.15);  /* 竹青 */
+
   /* 舊版相容變數 */
   --bg-primary: var(--paper);
   --bg-secondary: #eeece7;
@@ -44,6 +50,12 @@
   --hairline-strong: #3a3f49;
   --card: #1d2026;
   --card-hover: #23262d;
+
+  /* 流沙四色(深色模式:亮一點才透得出墨面) */
+  --sand-1: rgba(224, 82, 70, 0.14);
+  --sand-2: rgba(228, 179, 88, 0.12);
+  --sand-3: rgba(96, 134, 182, 0.14);
+  --sand-4: rgba(96, 168, 148, 0.12);
 
   --bg-secondary: #1a1d22;
 }
@@ -87,6 +99,65 @@ body {
   color: var(--seal-ink);
   border-radius: 4px;
   line-height: 1;
+}
+
+/* 彩色流沙背景:柔邊烤進 radial-gradient,動畫只碰 transform */
+.sand-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.sand-blob {
+  position: absolute;
+  width: 62vmax;
+  height: 62vmax;
+  border-radius: 50%;
+  will-change: transform;
+}
+.sand-blob--1 {
+  top: -28%;
+  left: -18%;
+  background: radial-gradient(circle at 40% 40%, var(--sand-1), transparent 62%);
+  animation: sand-drift-1 36s ease-in-out infinite alternate;
+}
+.sand-blob--2 {
+  top: 8%;
+  right: -30%;
+  background: radial-gradient(circle at 55% 45%, var(--sand-2), transparent 60%);
+  animation: sand-drift-2 44s ease-in-out infinite alternate;
+}
+.sand-blob--3 {
+  bottom: -35%;
+  left: 5%;
+  background: radial-gradient(circle at 50% 55%, var(--sand-3), transparent 62%);
+  animation: sand-drift-3 52s ease-in-out infinite alternate;
+}
+.sand-blob--4 {
+  bottom: -15%;
+  right: -12%;
+  width: 46vmax;
+  height: 46vmax;
+  background: radial-gradient(circle at 45% 50%, var(--sand-4), transparent 58%);
+  animation: sand-drift-4 40s ease-in-out infinite alternate;
+}
+
+@keyframes sand-drift-1 {
+  from { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+  to   { transform: translate3d(24vw, 16vh, 0) rotate(35deg) scale(1.22); }
+}
+@keyframes sand-drift-2 {
+  from { transform: translate3d(0, 0, 0) rotate(0deg) scale(1.15); }
+  to   { transform: translate3d(-20vw, 22vh, 0) rotate(-28deg) scale(0.92); }
+}
+@keyframes sand-drift-3 {
+  from { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+  to   { transform: translate3d(18vw, -18vh, 0) rotate(22deg) scale(1.3); }
+}
+@keyframes sand-drift-4 {
+  from { transform: translate3d(0, 0, 0) rotate(0deg) scale(1.1); }
+  to   { transform: translate3d(-14vw, -12vh, 0) rotate(-40deg) scale(0.9); }
 }
 
 /* 鍵盤焦點 */
