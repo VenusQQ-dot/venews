@@ -7,6 +7,8 @@ import { ADMIN_COOKIE, sessionToken } from '../../lib/adminAuth';
 import { requireAdmin } from '../../lib/requireAdmin';
 import { clearFailures, isLocked, recordFailure } from '../../lib/loginThrottle';
 import { getSupabaseAdmin } from '../../lib/supabase';
+import { ingestNews } from '../../lib/ingest';
+import { newsroomConfigured } from '../../lib/newsroom';
 
 async function clientKey(): Promise<string> {
   const hdrs = await headers();
@@ -130,4 +132,26 @@ export async function deleteArticle(id: number) {
   await getSupabaseAdmin().from('articles').delete().eq('id', id);
   revalidatePath('/');
   revalidatePath('/admin');
+}
+
+export type IngestState = { ok: boolean; message: string };
+
+/** 後台「手動抓一次」按鈕:跑自動編輯部,產出進草稿區。 */
+export async function triggerIngest(): Promise<IngestState> {
+  await requireAdmin();
+  if (!newsroomConfigured()) {
+    return { ok: false, message: '尚未設定 ANTHROPIC_API_KEY,無法啟用自動編輯部。' };
+  }
+  try {
+    const s = await ingestNews(4);
+    revalidatePath('/admin');
+    return {
+      ok: true,
+      message: `偵察 ${s.scouted} 則,撰稿 ${s.written} 篇,通過查證 ${s.passed} 篇,已存為草稿 ${s.inserted_as_draft} 篇${
+        s.rejected ? `,退稿 ${s.rejected} 篇` : ''
+      }。到下方列表確認後即可發布。`,
+    };
+  } catch (e) {
+    return { ok: false, message: (e as Error).message };
+  }
 }

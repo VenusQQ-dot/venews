@@ -3,7 +3,9 @@ import { getCategory } from '../data/news';
 import { DbArticle } from '../../lib/articles';
 import { adminConfigured, getSupabaseAdmin } from '../../lib/supabase';
 import { requireAdmin } from '../../lib/requireAdmin';
+import { newsroomConfigured } from '../../lib/newsroom';
 import { deleteArticle, logout, setStatus } from './actions';
+import IngestButton from './IngestButton';
 
 export const metadata = { title: '文章管理 — VeNews' };
 export const dynamic = 'force-dynamic';
@@ -66,6 +68,18 @@ export default async function AdminPage() {
           </form>
         </div>
       </div>
+
+      {newsroomConfigured() && (
+        <div className="mb-6 flex flex-col gap-3 rounded-xl border border-[var(--hairline)] bg-[var(--card)] p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="font-serif-tc font-bold text-[var(--ink)]">自動 AI 新聞編輯部</p>
+            <p className="text-xs text-[var(--ink-faint)]">
+              Claude 搜尋當日 AI 新聞 → 改寫 → 主編查證 → 存為草稿等你確認。每天自動跑一次,也可手動觸發。
+            </p>
+          </div>
+          <IngestButton />
+        </div>
+      )}
 
       {error && (
         <p className="mb-6 rounded-lg border border-[var(--seal)] px-4 py-3 text-sm text-[var(--seal)]">

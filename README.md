@@ -4,6 +4,7 @@ Next.js 新聞網站,分三階段開發:
 
 - ✅ **Phase 1** — 靜態新聞首頁(報紙風設計、分類篩選、深色模式)
 - ✅ **Phase 2** — Supabase 資料庫 + `/admin` 後台發布文章
+- ✅ **自動 AI 新聞編輯部** — Claude 每日搜尋、改寫、查證 AI 新聞,存為草稿等你確認
 - ⬜ **Phase 3** — Redis 語意搜尋(用自然語言找新聞)
 
 ## 本機開發
@@ -32,6 +33,24 @@ npm run dev
 4. 重新部署(或重啟 dev server),開 `/admin` 用密碼登入即可發布、編輯、下架、刪除文章
 
 發布後首頁最慢一分鐘內更新(ISR revalidate 60 秒)。
+
+## 自動 AI 新聞編輯部(選用)
+
+讓系統每天自動產出新聞草稿:Claude 用網路搜尋找出當日 AI 新聞 → fetch 原文改寫成
+繁中文章 → 主編 agent 查證是否有來源根據、是否編造、品質是否達標 → 只有通過的稿件
+才以「草稿」存入,等你到 `/admin` 確認後再發布。
+
+啟用步驟:
+
+1. 到 [console.anthropic.com](https://console.anthropic.com) 申請 Claude API 金鑰
+2. 加兩個環境變數:
+   - `ANTHROPIC_API_KEY` — 你的 Claude API 金鑰(會產生 API 費用,一次約幾則新聞)
+   - `CRON_SECRET` — 自己取一組隨機字串,保護排程端點(Vercel Cron 會自動帶上)
+3. 到 `/admin` 會出現「🤖 自動抓一次 AI 新聞」按鈕,先手動跑一次看看品質
+4. 滿意後就不用管了——`vercel.json` 已設定每天 00:00 UTC 自動觸發 `/api/ingest`
+
+流水線程式:`lib/newsroom.ts`(偵察/撰稿/主編三個 agent)、`lib/ingest.ts`(寫入草稿)、
+`app/api/ingest/route.ts`(排程端點)。所有產出**預設為草稿**,發布與否永遠由你決定。
 
 ## 部署到 Vercel
 
