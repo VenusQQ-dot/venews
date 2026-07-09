@@ -74,7 +74,8 @@ export default async function AdminPage() {
           <div>
             <p className="font-serif-tc font-bold text-[var(--ink)]">自動 AI 新聞編輯部</p>
             <p className="text-xs text-[var(--ink-faint)]">
-              Claude 搜尋當日 AI 新聞 → 改寫 → 主編查證 → 存為草稿等你確認。每天自動跑一次,也可手動觸發。
+              Claude 搜尋當日 AI 新聞 → 改寫 → 主編查證。每天排程會自動發佈審過的最佳一篇,其餘留草稿;
+              下方「手動抓一次」則全部存草稿供測試。
             </p>
           </div>
           <IngestButton />

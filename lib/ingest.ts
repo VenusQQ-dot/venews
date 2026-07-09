@@ -6,25 +6,34 @@ export type IngestSummary = {
   written: number;
   passed: number;
   rejected: number;
+  published: number;
   inserted_as_draft: number;
   notes: string[];
 };
 
 /**
- * 跑一次自動編輯部,並把通過查證的文章以「草稿」寫入 Supabase。
- * 供 /api/ingest(Cron)與後台手動按鈕共用。
+ * 跑一次自動編輯部,把通過查證的文章寫入 Supabase。
+ *
+ * autoPublishOne=true(每日排程):自動發佈「審過的最佳一篇」,其餘留草稿。
+ * autoPublishOne=false(後台手動按鈕):全部存草稿,方便測試不會亂發。
  */
-export async function ingestNews(max = 5): Promise<IngestSummary> {
+export async function ingestNews(max = 5, autoPublishOne = false): Promise<IngestSummary> {
   if (!newsroomConfigured()) throw new Error('尚未設定 ANTHROPIC_API_KEY');
   if (!adminConfigured()) throw new Error('尚未設定 Supabase');
 
   const result = await runNewsroom(max);
   const supabase = getSupabaseAdmin();
-  let inserted = 0;
+  let drafts = 0;
+  let published = 0;
+  let publishedOne = false;
 
-  for (const d of result.drafts) {
-    const slug = `ai-${Date.now()}-${inserted}`;
+  // result.drafts 依偵察時的重要性排序;第一篇通過的當作「今日一篇」發佈
+  for (let i = 0; i < result.drafts.length; i++) {
+    const d = result.drafts[i];
+    const publishThis = autoPublishOne && !publishedOne;
+    const slug = `ai-${Date.now()}-${i}`;
     const content = `${d.content}\n\n---\n來源:${d.source_url}`;
+
     const { error } = await supabase.from('articles').insert({
       slug,
       title: d.title,
@@ -33,10 +42,20 @@ export async function ingestNews(max = 5): Promise<IngestSummary> {
       category: d.category,
       author: d.author,
       read_mins: d.read_mins,
-      status: 'draft',
+      status: publishThis ? 'published' : 'draft',
+      published_at: publishThis ? new Date().toISOString() : null,
     });
-    if (!error) inserted++;
-    else result.notes.push(`寫入失敗「${d.title}」:${error.message}`);
+
+    if (error) {
+      result.notes.push(`寫入失敗「${d.title}」:${error.message}`);
+      continue;
+    }
+    if (publishThis) {
+      published++;
+      publishedOne = true;
+    } else {
+      drafts++;
+    }
   }
 
   return {
@@ -44,7 +63,8 @@ export async function ingestNews(max = 5): Promise<IngestSummary> {
     written: result.written,
     passed: result.published,
     rejected: result.rejected,
-    inserted_as_draft: inserted,
+    published,
+    inserted_as_draft: drafts,
     notes: result.notes,
   };
 }
