@@ -5,7 +5,8 @@ import { adminConfigured } from '../../../lib/supabase';
 
 // 這條路由會呼叫 Claude API、跑好幾分鐘,不能靜態化
 export const dynamic = 'force-dynamic';
-export const maxDuration = 300; // Vercel:給流水線最多 5 分鐘
+// Vercel Hobby 方案上限 60 秒;Pro 方案可調高到 300。
+export const maxDuration = 60;
 
 function authorized(req: NextRequest): boolean {
   const secret = process.env.CRON_SECRET;
