@@ -52,6 +52,43 @@ npm run dev
 流水線程式:`lib/newsroom.ts`(偵察/撰稿/主編三個 agent)、`lib/ingest.ts`(寫入草稿)、
 `app/api/ingest/route.ts`(排程端點)。所有產出**預設為草稿**,發布與否永遠由你決定。
 
+## 從外部 Claude Routines 發佈文章(選用)
+
+你的 Claude Routines 或其他外部系統可以直接 POST 文章到 `/api/publish` 端點,無須經過後台:
+
+1. 加環境變數 `PUBLISH_TOKEN` — 自己取一組隨機字串,保護發佈端點
+   ```bash
+   openssl rand -base64 24  # 產生安全隨機字串
+   ```
+
+2. 從你的 Routine(或任何伺服器端程式)POST JSON 文章:
+   ```bash
+   curl -X POST https://venews.example.com/api/publish \
+     -H "Authorization: Bearer YOUR_PUBLISH_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "title": "文章標題",
+       "summary": "摘要(選用)",
+       "content": "文章內容(選用)",
+       "category": "tech",
+       "author": "作者名",
+       "read_mins": 5,
+       "status": "published"
+     }'
+   ```
+
+3. 響應格式:
+   ```json
+   { "ok": true, "slug": "routine-1234567890", "status": "published" }
+   ```
+
+**欄位說明**:
+- `title` ✅ 必填
+- `category` — 有效值:`headline`、`world`、`tech`、`finance`、`culture`、`sports`(預設`headline`)
+- `status` — `draft` 或 `published`(預設`published`,設 `draft` 時不發布)
+- `slug` — 文章唯一識別碼(自動產生或自訂)
+- 其他欄位皆選用,留空時使用預設值
+
 ## 部署到 Vercel
 
 [vercel.com](https://vercel.com) → Import 此 repo → 加入上面四個環境變數 → Deploy。
