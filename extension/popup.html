@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    body {
+      font-family: -apple-system, "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+      width: 420px; margin: 0; padding: 12px;
+      color: #1a1a2e; font-size: 14px;
+    }
+    .toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+    .toolbar input {
+      flex: 1; padding: 6px 10px;
+      border: 1px solid #ccc; border-radius: 8px; font-size: 13px;
+    }
+    .toolbar button {
+      padding: 6px 12px; border: none; border-radius: 8px;
+      background: #1a1a2e; color: #fff; font-size: 13px; cursor: pointer;
+      white-space: nowrap;
+    }
+    .toolbar button:hover { background: #30305a; }
+    #count { color: #888; font-size: 12px; margin-bottom: 8px; }
+    #list { max-height: 440px; overflow-y: auto; }
+    .entry {
+      border: 1px solid #eee; border-radius: 10px;
+      padding: 10px 12px; margin-bottom: 8px;
+    }
+    .entry-head { display: flex; justify-content: space-between; align-items: baseline; }
+    .lemma { font-weight: 700; font-size: 15px; }
+    .pos { display: inline-block; margin-left: 6px; padding: 0 6px; background: #eef; color: #334; border-radius: 6px; font-size: 11px; }
+    .ipa { color: #667; font-size: 12px; margin-left: 4px; }
+    .speak { background: none; border: none; cursor: pointer; font-size: 13px; padding: 0 2px; vertical-align: middle; }
+    .speak:hover { opacity: .7; }
+    .delete { background: none; border: none; color: #b00020; cursor: pointer; font-size: 12px; }
+    .meaning { margin-top: 4px; }
+    .detail { color: #777; font-size: 12px; margin-top: 2px; }
+    .source { color: #aaa; font-size: 11px; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .empty { color: #888; text-align: center; padding: 30px 0; }
+    .settings-link { color: #2244cc; cursor: pointer; background: none; border: none; font-size: 12px; padding: 0; text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <input type="search" id="search" placeholder="搜尋單字或意思…" />
+    <button id="export">匯出 CSV</button>
+  </div>
+  <div id="count"></div>
+  <div id="list"></div>
+  <script src="popup.js"></script>
+</body>
+</html>
