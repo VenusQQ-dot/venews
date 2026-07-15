@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { cookies, headers } from 'next/headers';
-import { ADMIN_COOKIE, sessionToken } from '../../lib/adminAuth';
+import { ADMIN_COOKIE, SESSION_TTL_MS, sessionToken, verifyPassword } from '../../lib/adminAuth';
 import { requireAdmin } from '../../lib/requireAdmin';
 import { clearFailures, isLocked, recordFailure } from '../../lib/loginThrottle';
 import { getSupabaseAdmin } from '../../lib/supabase';
@@ -22,9 +22,8 @@ export async function login(formData: FormData) {
   }
 
   const password = String(formData.get('password') ?? '');
-  const expected = process.env.ADMIN_PASSWORD;
 
-  if (!expected || password !== expected) {
+  if (!(await verifyPassword(password))) {
     recordFailure(key);
     redirect(isLocked(key) ? '/admin/login?error=locked' : '/admin/login?error=1');
   }
@@ -37,7 +36,7 @@ export async function login(formData: FormData) {
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
-    maxAge: 60 * 60 * 24 * 7, // 七天
+    maxAge: SESSION_TTL_MS / 1000,
   });
   redirect('/admin');
 }
