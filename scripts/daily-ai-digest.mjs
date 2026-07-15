@@ -73,6 +73,7 @@ async function fetchAllFeeds() {
 
   results.forEach((r, i) => {
     if (r.status === "fulfilled") {
+      console.log(`  ${FEEDS[i].name}: ${r.value.length} 則`);
       items.push(...r.value);
     } else {
       console.warn(`[warn] 抓取失敗：${FEEDS[i].name} — ${r.reason?.message ?? r.reason}`);
@@ -174,13 +175,14 @@ async function sendEmail({ subject, bodyHtml }) {
     <p style="color:#999;font-size:12px;">本郵件由 venews 倉庫的 GitHub Actions 自動產生並寄送。</p>
   </div>`;
 
-  await transporter.sendMail({
+  const info = await transporter.sendMail({
     from: `"AI Daily Digest" <${user}>`,
     to,
     subject,
     html,
   });
-  console.log(`已寄出至 ${to}`);
+  transporter.close();
+  console.log(`已寄出至 ${to}（SMTP 回應：${info.response}）`);
 }
 
 async function main() {
@@ -214,7 +216,11 @@ async function main() {
   await sendEmail({ subject, bodyHtml });
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+// 寄信完成後明確結束程序：nodemailer/keep-alive 的連線可能讓 event loop
+// 不會自行清空，導致 job 掛到 timeout-minutes 被標記為 cancelled。
+main()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
