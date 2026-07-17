@@ -38,8 +38,8 @@ export type IngestResult = {
   notes: string[];
 };
 
-/** 從模型回覆裡抽出第一個 JSON 區塊(容忍 ```json 圍欄與前後贅字)。 */
-function extractJson<T>(text: string): T | null {
+/** 從模型回覆裡抽出第一個 JSON 區塊(容忍 ```json 圍欄與前後贅字)。導出以便測試。 */
+export function extractJson<T>(text: string): T | null {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
   const raw = fenced ? fenced[1] : text;
   const start = raw.search(/[[{]/);
