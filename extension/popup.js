@@ -117,6 +117,16 @@ function toCsv(entries) {
   return "\uFEFF" + rows.join("\r\n");
 }
 
+document.getElementById("review").addEventListener("click", () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL("review.html") });
+});
+
+function updateReviewButton() {
+  const due = SRS.dueCount(allEntries);
+  const btn = document.getElementById("review");
+  btn.textContent = due > 0 ? `📚 複習 (${due})` : "📚 複習";
+}
+
 document.getElementById("export").addEventListener("click", () => {
   const blob = new Blob([toCsv(allEntries)], { type: "text/csv;charset=utf-8" });
   const a = document.createElement("a");
@@ -131,4 +141,5 @@ searchInput.addEventListener("input", applyFilter);
 chrome.storage.local.get("vocab").then(({ vocab = [] }) => {
   allEntries = vocab;
   applyFilter();
+  updateReviewButton();
 });

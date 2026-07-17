@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>Wortschatz 複習</title>
+  <style>
+    body {
+      font-family: -apple-system, "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+      margin: 0; background: #f2f2f7; color: #1a1a2e;
+      display: flex; flex-direction: column; align-items: center;
+      min-height: 100vh;
+    }
+    header {
+      width: 100%; max-width: 640px;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 20px; box-sizing: border-box;
+      font-size: 14px; color: #666;
+    }
+    .card {
+      width: 100%; max-width: 640px; box-sizing: border-box;
+      background: #fff; border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.08);
+      padding: 36px 32px; margin: 0 16px;
+      text-align: center;
+    }
+    .front-word { font-size: 34px; font-weight: 700; }
+    .speak {
+      background: none; border: none; cursor: pointer;
+      font-size: 22px; vertical-align: middle;
+    }
+    .speak:hover { opacity: .7; }
+    .context { color: #888; font-size: 14px; margin-top: 14px; line-height: 1.6; }
+    hr { border: none; border-top: 1px solid #eee; margin: 22px 0; }
+    .answer { text-align: left; font-size: 15px; line-height: 1.8; }
+    .headword { font-size: 22px; font-weight: 700; text-align: center; }
+    .ipa { color: #667; font-size: 14px; margin-left: 8px; font-weight: 400; }
+    .pos { display: inline-block; margin-left: 8px; padding: 1px 10px; background: #eef; color: #334; border-radius: 10px; font-size: 13px; font-weight: 400; vertical-align: middle; }
+    .meaning { font-size: 17px; text-align: center; margin: 10px 0 4px; }
+    .label { color: #999; font-size: 12px; margin-right: 6px; }
+    .grammar { margin-top: 10px; padding: 10px 12px; background: #f7f7fb; border-radius: 10px; font-size: 14px; }
+    .example { margin-top: 10px; font-style: italic; }
+    .example-zh { color: #666; font-style: normal; font-size: 13px; }
+    .actions { margin-top: 28px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    button.rate, #show-answer {
+      border: none; border-radius: 12px; cursor: pointer;
+      padding: 12px 18px; font-size: 15px; min-width: 108px;
+      color: #fff;
+    }
+    #show-answer { background: #1a1a2e; min-width: 200px; }
+    #show-answer:hover { background: #30305a; }
+    .rate small { display: block; font-size: 11px; opacity: .85; margin-top: 3px; font-weight: 400; }
+    .rate.again { background: #c0392b; }
+    .rate.hard  { background: #d68910; }
+    .rate.good  { background: #229954; }
+    .rate.easy  { background: #2471a3; }
+    .rate:hover { filter: brightness(1.12); }
+    .kbd-hint { margin-top: 18px; color: #aaa; font-size: 12px; }
+    kbd {
+      background: #e8e8ee; border-radius: 4px; padding: 1px 6px;
+      font-family: inherit; font-size: 11px;
+    }
+    .done { font-size: 20px; padding: 40px 0; }
+    .done-sub { color: #888; font-size: 14px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <header>
+    <span>📚 Wortschatz 複習</span>
+    <span id="progress"></span>
+  </header>
+  <div class="card" id="card"></div>
+  <div class="kbd-hint" id="kbd-hint"></div>
+  <script src="srs.js"></script>
+  <script src="review.js"></script>
+</body>
+</html>
