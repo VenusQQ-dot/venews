@@ -102,10 +102,10 @@ function showAnswer() {
       }
     </div>
     <div class="actions">
-      <button class="rate again" data-rating="again">再一次<small>${preview.again}</small></button>
-      <button class="rate hard" data-rating="hard">困難<small>${preview.hard}</small></button>
-      <button class="rate good" data-rating="good">良好<small>${preview.good}</small></button>
-      <button class="rate easy" data-rating="easy">簡單<small>${preview.easy}</small></button>
+      <button class="rate again" data-rating="again">再一次<small>${escapeHtml(preview.again)}</small></button>
+      <button class="rate hard" data-rating="hard">困難<small>${escapeHtml(preview.hard)}</small></button>
+      <button class="rate good" data-rating="good">良好<small>${escapeHtml(preview.good)}</small></button>
+      <button class="rate easy" data-rating="easy">簡單<small>${escapeHtml(preview.easy)}</small></button>
     </div>
   `;
   kbdHintEl.innerHTML = `<kbd>1</kbd> 再一次 · <kbd>2</kbd> 困難 · <kbd>3</kbd> 良好 · <kbd>4</kbd> 簡單 · <kbd>S</kbd> 朗讀`;
