@@ -1,29 +1,23 @@
-import { continueRender, delayRender, staticFile } from "remotion";
+import { loadFont } from "@remotion/fonts";
+import { staticFile } from "remotion";
 
-// Self-hosted fonts (public/fonts) so renders work offline / in sandboxes.
-// Latin: Poppins + Lora (Anthropic brand). CJK: Noto Sans/Serif TC, subset to
-// only the characters this deck uses (see scripts/subset-fonts.mjs).
+// Brand fonts, self-hosted in public/fonts (see scripts/subset-fonts.mjs).
+// Latin: Poppins + Lora. CJK: Noto Sans/Serif TC, subset to the characters this
+// deck uses. @remotion/fonts.loadFont manages the delayRender lifecycle.
 const FONTS: { family: string; file: string; weight: string }[] = [
   { family: "Poppins", file: "fonts/Poppins-500.woff2", weight: "500" },
   { family: "Poppins", file: "fonts/Poppins-600.woff2", weight: "600" },
-  { family: "Lora", file: "fonts/Lora.woff2", weight: "400 600" },
+  { family: "Lora", file: "fonts/Lora.woff2", weight: "400" },
+  { family: "Lora", file: "fonts/Lora.woff2", weight: "600" },
   { family: "Noto Sans TC", file: "fonts/NotoSansTC-400.woff2", weight: "400" },
   { family: "Noto Sans TC", file: "fonts/NotoSansTC-500.woff2", weight: "500" },
   { family: "Noto Sans TC", file: "fonts/NotoSansTC-700.woff2", weight: "700" },
   { family: "Noto Serif TC", file: "fonts/NotoSerifTC-600.woff2", weight: "600" },
 ];
 
-if (typeof document !== "undefined" && "fonts" in document) {
-  const handle = delayRender("Loading brand fonts");
-  Promise.all(
-    FONTS.map(async ({ family, file, weight }) => {
-      const face = new FontFace(family, `url(${staticFile(file)})`, { weight });
-      document.fonts.add(await face.load());
-    }),
-  )
-    .then(() => continueRender(handle))
-    .catch(() => continueRender(handle));
-}
+FONTS.forEach(({ family, file, weight }) => {
+  loadFont({ family, url: staticFile(file), weight, format: "woff2" });
+});
 
 // Font stacks: Latin glyphs come from Poppins/Lora, CJK falls back to Noto TC.
 export const displayFont = `"Lora", "Noto Serif TC", serif`; // large editorial headings
