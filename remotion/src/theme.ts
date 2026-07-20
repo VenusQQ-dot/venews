@@ -1,11 +1,16 @@
 import { continueRender, delayRender, staticFile } from "remotion";
 
-// Anthropic official brand fonts, self-hosted from public/fonts so renders
-// work offline / in sandboxes (no fonts.gstatic.com fetch at render time).
+// Self-hosted fonts (public/fonts) so renders work offline / in sandboxes.
+// Latin: Poppins + Lora (Anthropic brand). CJK: Noto Sans/Serif TC, subset to
+// only the characters this deck uses (see scripts/subset-fonts.mjs).
 const FONTS: { family: string; file: string; weight: string }[] = [
   { family: "Poppins", file: "fonts/Poppins-500.woff2", weight: "500" },
   { family: "Poppins", file: "fonts/Poppins-600.woff2", weight: "600" },
   { family: "Lora", file: "fonts/Lora.woff2", weight: "400 600" },
+  { family: "Noto Sans TC", file: "fonts/NotoSansTC-400.woff2", weight: "400" },
+  { family: "Noto Sans TC", file: "fonts/NotoSansTC-500.woff2", weight: "500" },
+  { family: "Noto Sans TC", file: "fonts/NotoSansTC-700.woff2", weight: "700" },
+  { family: "Noto Serif TC", file: "fonts/NotoSerifTC-600.woff2", weight: "600" },
 ];
 
 if (typeof document !== "undefined" && "fonts" in document) {
@@ -20,8 +25,10 @@ if (typeof document !== "undefined" && "fonts" in document) {
     .catch(() => continueRender(handle));
 }
 
-export const headingFont = "Poppins";
-export const bodyFont = "Lora";
+// Font stacks: Latin glyphs come from Poppins/Lora, CJK falls back to Noto TC.
+export const displayFont = `"Lora", "Noto Serif TC", serif`; // large editorial headings
+export const headingFont = `"Poppins", "Noto Sans TC", sans-serif`; // titles, labels
+export const bodyFont = `"Poppins", "Noto Sans TC", sans-serif`; // body copy
 
 // Anthropic official brand colors
 export const colors = {
@@ -35,5 +42,4 @@ export const colors = {
 } as const;
 
 // The signature "Anthropic smooth" easing — a soft exponential ease-out.
-// Elements decelerate gently into place; nothing snaps.
 export const smooth = [0.16, 1, 0.3, 1] as const;

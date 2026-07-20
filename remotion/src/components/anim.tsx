@@ -6,7 +6,7 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
-import { bodyFont, colors, headingFont, smooth } from "../theme";
+import { bodyFont, colors, displayFont, headingFont, smooth } from "../theme";
 
 /**
  * Slide — a full-frame container that handles the signature Anthropic
@@ -147,19 +147,55 @@ export const DrawUnderline: React.FC<{
   );
 };
 
-export const heading = (size: number): React.CSSProperties => ({
-  fontFamily: headingFont,
+export const display = (size: number): React.CSSProperties => ({
+  fontFamily: displayFont,
   fontWeight: 600,
   fontSize: size,
-  lineHeight: 1.08,
+  lineHeight: 1.12,
   color: colors.dark,
-  letterSpacing: "-0.02em",
+  letterSpacing: "-0.01em",
+});
+
+export const heading = (size: number): React.CSSProperties => ({
+  fontFamily: headingFont,
+  fontWeight: 700,
+  fontSize: size,
+  lineHeight: 1.16,
+  color: colors.dark,
+  letterSpacing: "-0.01em",
 });
 
 export const body = (size: number): React.CSSProperties => ({
   fontFamily: bodyFont,
   fontWeight: 400,
   fontSize: size,
-  lineHeight: 1.4,
+  lineHeight: 1.5,
   color: colors.dark,
 });
+
+/** The Anthropic sunburst glyph. */
+export const AnthropicMark: React.FC<{ size?: number; color?: string }> = ({
+  size = 120,
+  color = colors.dark,
+}) => {
+  const rays = 12;
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100">
+      {Array.from({ length: rays }).map((_, i) => {
+        const a = (i / rays) * 180;
+        return (
+          <rect
+            key={i}
+            x={48}
+            y={8}
+            width={4}
+            height={34}
+            rx={2}
+            fill={color}
+            transform={`rotate(${a} 50 50)`}
+          />
+        );
+      })}
+    </svg>
+  );
+};
