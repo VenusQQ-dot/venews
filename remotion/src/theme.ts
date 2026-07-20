@@ -1,9 +1,27 @@
-import { loadFont as loadPoppins } from "@remotion/google-fonts/Poppins";
-import { loadFont as loadLora } from "@remotion/google-fonts/Lora";
+import { continueRender, delayRender, staticFile } from "remotion";
 
-// Anthropic official brand fonts
-export const { fontFamily: headingFont } = loadPoppins();
-export const { fontFamily: bodyFont } = loadLora();
+// Anthropic official brand fonts, self-hosted from public/fonts so renders
+// work offline / in sandboxes (no fonts.gstatic.com fetch at render time).
+const FONTS: { family: string; file: string; weight: string }[] = [
+  { family: "Poppins", file: "fonts/Poppins-500.woff2", weight: "500" },
+  { family: "Poppins", file: "fonts/Poppins-600.woff2", weight: "600" },
+  { family: "Lora", file: "fonts/Lora.woff2", weight: "400 600" },
+];
+
+if (typeof document !== "undefined" && "fonts" in document) {
+  const handle = delayRender("Loading brand fonts");
+  Promise.all(
+    FONTS.map(async ({ family, file, weight }) => {
+      const face = new FontFace(family, `url(${staticFile(file)})`, { weight });
+      document.fonts.add(await face.load());
+    }),
+  )
+    .then(() => continueRender(handle))
+    .catch(() => continueRender(handle));
+}
+
+export const headingFont = "Poppins";
+export const bodyFont = "Lora";
 
 // Anthropic official brand colors
 export const colors = {
