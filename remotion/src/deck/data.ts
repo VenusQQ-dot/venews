@@ -61,7 +61,9 @@ export type Slide =
       signoff: string;
     };
 
-export const SLIDES: (Slide & { dur?: number })[] = [
+// `scene` swaps a bespoke animated scene (see deck/scenes.tsx) in for the
+// generic renderer, keyed by id — the "hero" moments of the deck.
+export const SLIDES: (Slide & { dur?: number; scene?: string; kicker?: string })[] = [
   {
     type: "cover",
     title: "我與 AI 合作的\n圖片生成指南",
@@ -157,6 +159,7 @@ export const SLIDES: (Slide & { dur?: number })[] = [
   },
   {
     type: "bullets",
+    scene: "prompt",
     kicker: "組成 Prompt",
     title: "把六個欄位組成可複製模板",
     points: [
@@ -165,10 +168,11 @@ export const SLIDES: (Slide & { dur?: number })[] = [
       { text: "模板讓第一版不偏太遠，先落在能討論的範圍" },
       { lead: "提醒", text: "相同 Prompt 也不保證完全相同，它控制方向不是複製" },
     ],
-    dur: 140,
+    dur: 175,
   },
   {
     type: "statement",
+    scene: "chat",
     kicker: "生成前 30 秒",
     title: "先請 AI 復述，再開始生成",
     accent: "復述",
@@ -177,7 +181,7 @@ export const SLIDES: (Slide & { dur?: number })[] = [
       "30 秒確認：我們理解的是不是同一件事",
       "現在改一句話；等生成後才發現，就要全部重來",
     ],
-    dur: 135,
+    dur: 195,
   },
   {
     type: "cards",
@@ -273,10 +277,12 @@ export const SLIDES: (Slide & { dur?: number })[] = [
   },
   {
     type: "steps",
-    title: "案例二 · 先把報銷邏輯說清楚",
+    scene: "flow",
+    kicker: "案例二 · 資訊結構圖",
+    title: "先把報銷邏輯說清楚",
     steps: ["員工申請 + 憑證", "主管審核用途預算", "會計審核單據科目", "出納付款", "歸檔"],
     note: "退件規則：主管或會計退件，都要回到員工補件。人的第一份工作是先把邏輯寫對",
-    dur: 145,
+    dur: 185,
   },
   {
     type: "bullets",
@@ -304,6 +310,7 @@ export const SLIDES: (Slide & { dur?: number })[] = [
   },
   {
     type: "bullets",
+    scene: "bars",
     kicker: "案例三 · 數據",
     title: "預算執行率：先決定管理問題",
     points: [
@@ -312,7 +319,7 @@ export const SLIDES: (Slide & { dur?: number })[] = [
       { text: "行政 82、人資 91；資訊與業務超標用警示色" },
       { text: "正式數字、公式、來源仍回可驗證的工具確認" },
     ],
-    dur: 140,
+    dur: 160,
   },
   {
     type: "cards",
