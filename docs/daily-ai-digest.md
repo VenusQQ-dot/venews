@@ -21,7 +21,7 @@
 
 | 名稱 | 必要 | 說明 |
 |---|---|---|
-| `GMAIL_USER` | ✅ | 寄件用的 Gmail 帳號（例如 `venus86112929@gmail.com`） |
+| `GMAIL_USER` | ✅ | 寄件用的 Gmail 帳號（例如 `your-account@gmail.com`） |
 | `GMAIL_APP_PASSWORD` | ✅ | 上一步建立的 16 碼應用程式密碼 |
 | `ANTHROPIC_API_KEY` | 建議 | Claude API 金鑰（[platform.claude.com](https://platform.claude.com) 取得）。未設定時仍會寄信，但只有原始新聞清單、沒有中文摘要 |
 
