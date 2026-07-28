@@ -10,6 +10,9 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
+  // The standalone Remotion video project has its own tooling; keep it out
+  // of the Next.js app's lint pass.
+  { ignores: ["remotion/**"] },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
 ];
 

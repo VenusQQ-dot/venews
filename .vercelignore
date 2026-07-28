@@ -1,0 +1,5 @@
+# The remotion/ folder is a standalone Remotion video project with its own
+# package.json and dependencies. It is not part of the Next.js web app and
+# must be excluded from Vercel deployments so it isn't picked up by the
+# root install / next build.
+remotion
