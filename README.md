@@ -89,6 +89,68 @@ npm run dev
 - `slug` — 文章唯一識別碼(自動產生或自訂)
 - 其他欄位皆選用,留空時使用預設值
 
+## 台股盤後籌碼情報 Agent(選用)
+
+每天台股盤後,自動抓證交所免費資料,用「主力暗中吃貨」籌碼演算法選股,再由 Claude 分析室
+解讀 + 合規查證,產出當日情報。設計思路對應大戶的情報網:**低基期橫盤 + 三大法人集中買超 +
+營收有底氣 + 尚未噴出**——也就是還沒有利多新聞、但籌碼異常集中的潛在轉骨股。
+
+**流水線**:ETL(`lib/twse.ts` 抓官方資料)→ 逐日累積快照 → 選股演算法(`lib/stockScreener.ts`)
+→ Claude 分析師 + 主編(`lib/stockroom.ts`)→ 寫入情報庫 + 一篇 `finance` 文章草稿(`lib/stockIngest.ts`)。
+由 `/api/stock-brief` 觸發(Vercel Cron 每個交易日 20:00 台北,或手動)。
+
+**資料來源(公開、免金鑰的證交所 OpenAPI)**:
+- 上市個股日成交 `STOCK_DAY_ALL`(收盤/高/低/量/漲跌)
+- 三大法人買賣超 `T86`(外資/投信/自營/合計)
+- 上市每月營收 `t187ap05_L`(YoY / MoM)
+
+> ⚠️ 訊號(近 20 日高低、連續買超)靠資料庫**逐日累積**算出,故需連跑約 **20 個交易日**
+> 才有完整選股結果;前期只會完成資料累積並提示「歷史不足」。
+
+**啟用步驟**:
+
+1. 到 Supabase SQL Editor 執行 [`supabase/stock_schema.sql`](supabase/stock_schema.sql)
+   (建立 `stock_snapshots` 與 `stock_briefs` 兩張表)。
+2. 沿用既有環境變數即可:`SUPABASE_*`(寫入)、`ANTHROPIC_API_KEY`(AI 解讀,未設定則只出純籌碼清單)、
+   `CRON_SECRET`(保護排程端點)。**不需新增任何變數。**
+3. 部署後 `vercel.json` 已排程每交易日自動觸發;產出預設為**草稿**,到 `/admin` 確認後再發布。
+4. **首次上線建議先核對欄位**:證交所偶爾微調 JSON key,跑一次診斷工具確認 `lib/twse.ts`
+   的取值 key 是否正確(需在可連 `openapi.twse.com.tw` 的環境執行):
+   ```bash
+   node scripts/twse-probe.mjs
+   ```
+   若某欄位名稱不符,把實際 key 補進 `lib/twse.ts` 對應的 `candidates` 陣列即可(取不到時程式會
+   當 0/null 並在回應的 `notes` 中列出,不會整個壞掉)。
+
+**手動觸發 / 測試**(帶 `CRON_SECRET`):
+```bash
+# 完整跑(含 AI 解讀),存草稿
+curl -H "Authorization: Bearer $CRON_SECRET" https://<你的網域>/api/stock-brief
+# 只做籌碼掃描不呼叫 Claude(省時省費)
+curl -H "Authorization: Bearer $CRON_SECRET" "https://<你的網域>/api/stock-brief?analyze=0"
+# 直接發布(預設是存草稿)
+curl -H "Authorization: Bearer $CRON_SECRET" "https://<你的網域>/api/stock-brief?publish=1"
+```
+
+> 免責:本功能為技術面/籌碼面自動彙整,僅供研究,不構成任何投資建議。
+
+**排程方式(二選一;兩個都開會重複跑,upsert 冪等但會重複花 AI 費用)**:
+
+- **A. Vercel Cron(零額外設定,若你已部署 Vercel)**:`vercel.json` 已排每交易日 20:00 台北
+  觸發 `/api/stock-brief`。合併 + 設好 `SUPABASE_*` / `ANTHROPIC_API_KEY` / `CRON_SECRET`
+  即生效。Hobby 方案有 60 秒上限,資料多或開 AI 解讀時建議升 Pro。
+- **B. GitHub Actions(不依賴 Vercel、無 60 秒上限、runner 具完整外網)**:
+  `.github/workflows/stock-daily-brief.yml`,每交易日 21:00 台北跑 `scripts/run-stock-brief.ts`
+  完整 pipeline 直接寫 Supabase。到 repo **Settings → Secrets and variables → Actions** 加:
+  - Secrets:`NEXT_PUBLIC_SUPABASE_URL`、`SUPABASE_SERVICE_ROLE_KEY`、`ANTHROPIC_API_KEY`
+  - Variables(選用):`STOCK_ANALYZE=0`(只掃籌碼不呼叫 AI)、`STOCK_PUBLISH=1`(直接發佈)
+  - Actions 頁面按 **Run workflow** 可手動測試一次。
+
+> 選 B 就把 `vercel.json` 的 `/api/stock-brief` cron 移除(或反之),避免重複執行。
+
+**目前範圍與延伸**:MVP 涵蓋**上市(TWSE)**。上櫃/興櫃(對應「冷門妖股」)可在 `lib/twse.ts`
+比照 `fetchStockDay`/`mergeInsti` 增加 TPEx OpenAPI 端點,並在 snapshot 的 `market` 標記 `TPEX`。
+
 ## 部署到 Vercel
 
 [vercel.com](https://vercel.com) → Import 此 repo → 加入上面四個環境變數 → Deploy。
@@ -107,4 +169,13 @@ lib/
   adminAuth.ts          後台密碼登入(HMAC cookie)
 middleware.ts           /admin 路由保護
 supabase/schema.sql     資料表 + RLS + 種子資料
+
+# 台股盤後籌碼情報 Agent
+lib/twse.ts             證交所 OpenAPI 資料層(欄位容錯 + 診斷)
+lib/stockScreener.ts    「主力暗中吃貨」選股演算法(純函式,可單元測試)
+lib/stockroom.ts        Claude 分析師 + 合規主編
+lib/stockIngest.ts      ETL + 選股 + 寫入(snapshots / briefs / 文章草稿)
+app/api/stock-brief/    Cron 端點(CRON_SECRET 保護)
+scripts/twse-probe.mjs  首次上線核對欄位名稱的診斷工具
+supabase/stock_schema.sql  stock_snapshots + stock_briefs
 ```
