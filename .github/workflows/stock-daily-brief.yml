@@ -1,0 +1,40 @@
+name: Taiwan Stock Daily Brief
+
+# 台股盤後籌碼情報 Agent 排程。
+# GitHub Actions runner 具完整外網,可連證交所 OpenAPI(不受開發沙箱網路政策影響)。
+# 直接跑完整 pipeline 寫入 Supabase,不需部署 Vercel。
+
+on:
+  schedule:
+    # 13:00 UTC = 21:00 台北。台股 13:30 收盤,三大法人 T86 傍晚才更新,故排在晚上。
+    # 只在週一~週五跑(台股交易日;遇國定假日該日無新資料,upsert 冪等不會出錯)。
+    # GitHub 排程為「盡力而為」,可能延遲數分鐘~數十分鐘,屬正常。
+    - cron: "0 13 * * 1-5"
+  workflow_dispatch: {}
+
+jobs:
+  run-brief:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run stock brief agent
+        run: npx --yes tsx scripts/run-stock-brief.ts
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # 只做籌碼掃描不呼叫 Claude 時設 STOCK_ANALYZE=0;要直接發佈設 STOCK_PUBLISH=1
+          STOCK_ANALYZE: ${{ vars.STOCK_ANALYZE }}
+          STOCK_PUBLISH: ${{ vars.STOCK_PUBLISH }}

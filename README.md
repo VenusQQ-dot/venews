@@ -134,6 +134,20 @@ curl -H "Authorization: Bearer $CRON_SECRET" "https://<你的網域>/api/stock-b
 
 > 免責:本功能為技術面/籌碼面自動彙整,僅供研究,不構成任何投資建議。
 
+**排程方式(二選一;兩個都開會重複跑,upsert 冪等但會重複花 AI 費用)**:
+
+- **A. Vercel Cron(零額外設定,若你已部署 Vercel)**:`vercel.json` 已排每交易日 20:00 台北
+  觸發 `/api/stock-brief`。合併 + 設好 `SUPABASE_*` / `ANTHROPIC_API_KEY` / `CRON_SECRET`
+  即生效。Hobby 方案有 60 秒上限,資料多或開 AI 解讀時建議升 Pro。
+- **B. GitHub Actions(不依賴 Vercel、無 60 秒上限、runner 具完整外網)**:
+  `.github/workflows/stock-daily-brief.yml`,每交易日 21:00 台北跑 `scripts/run-stock-brief.ts`
+  完整 pipeline 直接寫 Supabase。到 repo **Settings → Secrets and variables → Actions** 加:
+  - Secrets:`NEXT_PUBLIC_SUPABASE_URL`、`SUPABASE_SERVICE_ROLE_KEY`、`ANTHROPIC_API_KEY`
+  - Variables(選用):`STOCK_ANALYZE=0`(只掃籌碼不呼叫 AI)、`STOCK_PUBLISH=1`(直接發佈)
+  - Actions 頁面按 **Run workflow** 可手動測試一次。
+
+> 選 B 就把 `vercel.json` 的 `/api/stock-brief` cron 移除(或反之),避免重複執行。
+
 **目前範圍與延伸**:MVP 涵蓋**上市(TWSE)**。上櫃/興櫃(對應「冷門妖股」)可在 `lib/twse.ts`
 比照 `fetchStockDay`/`mergeInsti` 增加 TPEx OpenAPI 端點,並在 snapshot 的 `market` 標記 `TPEX`。
 
