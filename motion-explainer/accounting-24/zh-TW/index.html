@@ -1,0 +1,285 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>會計與財務 24 詞速查表</title>
+<style>html,body{margin:0;background:#F4F3F0}canvas{display:block}</style></head>
+<body><canvas id="c"></canvas>
+<script>
+// 會計與財務 24 詞：3 頁 x 8 張卡（1200x1350, 30fps, 每頁 9.4 秒, 無縫循環）。
+// 每一格畫面只由 frame 編號決定（render.mjs 逐格擷取）。
+//   window.N_FRAMES / window.renderFrame(i) / window.READY / window.CARD_RECTS
+// URL: ?page=1|2|3 選頁, ?t=秒 顯示靜止畫面, ?render=1 關閉預覽循環。
+// 外觀沿用 examples/camera-moves：灰階 + 單一藍色，藍色只用在「這個名詞在講的東西」。
+
+// ============================== CONTENT ==============================
+const SERIES = '會計與財務';
+const PAGES = [
+  { no: '1/3', title: '帳務處理與分錄', note: '記一筆帳該用哪個詞' },
+  { no: '2/3', title: '對帳與內控', note: '驗證數字對不對' },
+  { no: '3/3', title: '報表與分析', note: '把數字變成決策' },
+];
+const ITEMS = [
+  ['01', '借貸分錄', 'Journal Entry'], ['02', '應計（暫估）', 'Accrual'], ['03', '預付費用攤銷', 'Prepaid Expense Amortization'], ['04', '直線法折舊', 'Straight-line Depreciation'],
+  ['05', '迴轉分錄', 'Reversing Entry'], ['06', '重分類', 'Reclassification'], ['07', '內部往來沖銷', 'Intercompany Elimination'], ['08', '外幣評價', 'FX Revaluation'],
+  ['09', '銀行調節表', 'Bank Reconciliation'], ['10', '三方比對', 'Three-way Match'], ['11', '明細帳與總帳核對', 'Subledger-to-GL Reconciliation'], ['12', '帳齡分析', 'AR Aging'],
+  ['13', '截止測試', 'Cut-off Test'], ['14', '試算表', 'Trial Balance'], ['15', '差異分析', 'Variance Analysis'], ['16', '職務分工', 'Segregation of Duties'],
+  ['17', '資產負債表', 'Balance Sheet'], ['18', '損益表', 'Income Statement'], ['19', '現金流量表（間接法）', 'Cash Flow Statement (Indirect)'], ['20', '共同比報表', 'Common-size Statement'],
+  ['21', '現金轉換循環', 'Cash Conversion Cycle'], ['22', '損益兩平', 'Break-even Analysis'], ['23', '滾動預測', 'Rolling Forecast'], ['24', '敏感度分析', 'Sensitivity Analysis'],
+];
+
+// ============================== LOOK ==============================
+const W = 1200, H = 1350, FPS = 30;
+const PAGE = 9.4;
+const CYC = PAGE / 2;   // 每張卡每頁播 2 次（4.7 秒）
+const C = {
+  bg: '#F4F3F0', card: '#FFFFFF', border: '#E3E1DC', ink: '#1E1E21', sub: '#8E8E93', faint: '#C9C9CC',
+  blue: '#2F6BEB', blueM: '#9DB8F6', blueL: '#C9D8FB', blueXL: '#E4ECFE', blueBg: '#F1F5FF',
+  g1: '#F1F0EE', g2: '#E2E1DE', g3: '#CFCECB', g4: '#A9A8A5', g5: '#6E6E73'
+};
+// 只用本機已安裝字型（不從網路載入）。中文：文泉驛正黑；英數：Inter；等寬：JetBrains Mono
+const ZH = '"WenQuanYi Zen Hei", "Noto Sans CJK TC", "PingFang TC", sans-serif';
+const EN = '"Inter", "Helvetica Neue", system-ui, sans-serif';
+const MONO = '"JetBrains Mono", ui-monospace, monospace';
+
+const MX = 44, GAP = 34, CW = (W - MX * 2 - GAP) / 2, CH = 208, ROW0 = 104, PITCH = 300;
+// 各卡錯開起始時間，讓 8 張卡的關鍵瞬間不同時發生（秒）
+const OFFS = [0, 0.6, 1.2, 1.8, 0.3, 0.9, 1.5, 2.1];
+window.CARD_RECTS = Array.from({ length: 8 }, (_, i) => [MX + (i % 2) * (CW + GAP), ROW0 + Math.floor(i / 2) * PITCH, CW, CH]);
+
+// ============================== UTIL ==============================
+const DEFAULT_PAGE = 1;
+const PAGE_ONLY = Math.min(3, Math.max(1, +(new URLSearchParams(location.search).get('page')) || DEFAULT_PAGE)) - 1;
+window.N_FRAMES = Math.round(PAGE * FPS);
+const cv = document.getElementById('c'); cv.width = W; cv.height = H; const cx = cv.getContext('2d');
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, x) => a + (b - a) * x;
+const P = (t, a, b) => clamp((t - a) / (b - a));
+const mod = (a, n) => ((a % n) + n) % n;
+const eIO = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const eIOs = x => x < .5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+const eOut = x => 1 - Math.pow(1 - x, 3);
+const fmt = n => Math.round(n).toLocaleString('en-US');
+function mkCanvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+function rr(k, x, y, w, h, r) { k.beginPath(); k.roundRect(x, y, w, h, r); }
+function txt(k, s, x, y, font, col, align = 'left', base = 'alphabetic') {
+  k.font = font; k.fillStyle = col; k.textAlign = align; k.textBaseline = base; k.fillText(s, x, y);
+}
+function tw(k, s, font) { k.font = font; return k.measureText(s).width; }
+
+const CARD = mkCanvas(CW, CH), CK = CARD.getContext('2d');
+const TMP = mkCanvas(CW, CH), TK = TMP.getContext('2d');
+function clear(k) { k.setTransform(1, 0, 0, 1, 0, 0); k.globalAlpha = 1; k.filter = 'none'; k.fillStyle = C.g1; k.fillRect(0, 0, CW, CH); }
+// fnA を描き、その上に fnB をアルファ a で重ねる
+function blend(k, fnA, fnB, a) {
+  if (a <= 0.001) return fnA(k);
+  if (a >= 0.999) return fnB(k);
+  fnA(k);
+  clear(TK); fnB(TK); k.save(); k.setTransform(1, 0, 0, 1, 0, 0); k.globalAlpha = a; k.drawImage(TMP, 0, 0); k.restore();
+}
+// 會計動作不能倒放（入帳、攤銷），循環最後 0.5 秒交叉淡入回到起始狀態
+const RESET = 0.5;
+function cell(draw) {
+  return (k, w, h, u) => {
+    const r = eIOs(P(u, CYC - RESET, CYC));
+    let hud;
+    blend(k, kk => { hud = draw(kk, w, h, Math.min(u, CYC - RESET)); }, kk => draw(kk, w, h, 0), r);
+    return r > 0.5 ? draw.hud0 : hud;
+  };
+}
+
+// ---- 共用圖形：紙張、標籤、圖示
+function paper(k, x, y, w, h) {
+  k.save(); k.shadowColor = 'rgba(0,0,0,.06)'; k.shadowBlur = 6; k.shadowOffsetY = 1;
+  rr(k, x, y, w, h, 6); k.fillStyle = '#fff'; k.fill(); k.restore();
+  k.strokeStyle = C.g2; k.lineWidth = 1.5; rr(k, x + .5, y + .5, w - 1, h - 1, 6); k.stroke();
+}
+function chip(k, s, x, y, font, fill, col, padX = 10, hh = 28) {   // x,y = 左上
+  const ww = tw(k, s, font) + padX * 2;
+  rr(k, x, y, ww, hh, hh / 2); k.fillStyle = fill; k.fill();
+  txt(k, s, x + ww / 2, y + hh / 2 + 1, font, col, 'center', 'middle');
+  return ww;
+}
+function hline(k, x1, x2, y, col = C.g2, lw = 1.5) { k.strokeStyle = col; k.lineWidth = lw; k.beginPath(); k.moveTo(x1, y); k.lineTo(x2, y); k.stroke(); }
+function check(k, x, y, s, col = C.blue, lw = 3) {
+  k.strokeStyle = col; k.lineWidth = lw; k.lineCap = 'round'; k.lineJoin = 'round';
+  k.beginPath(); k.moveTo(x - s, y); k.lineTo(x - s * .3, y + s * .7); k.lineTo(x + s, y - s * .8); k.stroke();
+}
+// 卡片角落的小標（像文件編號）
+function tag(k, s) { txt(k, s, 18, 22, `500 13px ${MONO}`, C.g4, 'left', 'middle'); }
+function hudBox(k, w, s, col = C.g5) {
+  const f = `600 15px ${MONO}`, ww = tw(k, s, f);
+  k.fillStyle = 'rgba(255,255,255,.9)'; rr(k, w - 14 - ww - 20, 9, ww + 20, 25, 6); k.fill();
+  k.strokeStyle = C.g2; k.lineWidth = 1; rr(k, w - 14 - ww - 20 + .5, 9.5, ww + 19, 24, 6); k.stroke();
+  txt(k, s, w - 24, 22, f, col, 'right', 'middle');
+}
+
+// ============================== CELLS ==============================
+const CELLS = [];
+
+// 01 借貸分錄：傳票上先記借方、再記貸方，兩邊相等時天秤回到水平
+CELLS[0] = cell((k, w, h, u) => {
+  const a1 = eOut(P(u, 0.5, 1.0)), a2 = eOut(P(u, 1.4, 1.9)), ok = eOut(P(u, 2.0, 2.4));
+  tag(k, 'JV-0931');
+  const X = 16, Y = 32, PW = 336, PH = 160;
+  paper(k, X, Y, PW, PH);
+  const cA = X + 16, cD = X + 230, cC = X + 318, fH = `600 16px ${ZH}`, fR = `500 19px ${ZH}`, fN = `600 19px ${EN}`;
+  txt(k, '科目', cA, Y + 28, fH, C.sub); txt(k, '借方', cD, Y + 28, fH, C.sub, 'right'); txt(k, '貸方', cC, Y + 28, fH, C.sub, 'right');
+  hline(k, X + 10, X + PW - 10, Y + 40);
+  // 第 1 列：借 辦公用品
+  if (a1 > 0) {
+    k.save(); k.globalAlpha = a1; const dy = (1 - a1) * -14;
+    txt(k, '辦公用品', cA, Y + 72 + dy, fR, C.ink); txt(k, '3,000', cD, Y + 72 + dy, fN, C.blue, 'right'); k.restore();
+  }
+  // 第 2 列：貸 現金（貸方科目縮排）
+  if (a2 > 0) {
+    k.save(); k.globalAlpha = a2; const dy = (1 - a2) * -14;
+    txt(k, '現金', cA + 28, Y + 106 + dy, fR, C.ink); txt(k, '3,000', cC, Y + 106 + dy, fN, C.ink, 'right'); k.restore();
+  }
+  hline(k, X + 10, X + PW - 10, Y + 122, C.g3);
+  const tD = a1 > .5 ? 3000 : 0, tC = a2 > .5 ? 3000 : 0;
+  txt(k, '合計', cA, Y + 147, fH, C.sub);
+  const colT = ok > .5 ? C.blue : C.g5;
+  txt(k, fmt(tD), cD, Y + 147, `700 18px ${EN}`, colT, 'right'); txt(k, fmt(tC), cC, Y + 147, `700 18px ${EN}`, colT, 'right');
+  // 天秤
+  const px = 438, py = 66, L = 56;
+  const ang = -0.24 * a1 * (1 - a2);   // 只有借方時左邊（借）下沉
+  k.fillStyle = C.g4; k.fillRect(px - 2.5, py, 5, 92); rr(k, px - 30, py + 90, 60, 8, 4); k.fill();
+  k.beginPath(); k.arc(px, py, 6, 0, 7); k.fill();
+  const ends = [-1, 1].map(s => [px + s * L * Math.cos(ang), py + s * L * Math.sin(ang)]);
+  k.strokeStyle = C.g5; k.lineWidth = 4; k.lineCap = 'round'; k.beginPath(); k.moveTo(...ends[0]); k.lineTo(...ends[1]); k.stroke();
+  ends.forEach(([ex, ey], i) => {
+    k.strokeStyle = C.g3; k.lineWidth = 1.5; k.beginPath(); k.moveTo(ex, ey); k.lineTo(ex - 22, ey + 38); k.moveTo(ex, ey); k.lineTo(ex + 22, ey + 38); k.stroke();
+    k.fillStyle = C.g3; rr(k, ex - 28, ey + 37, 56, 6, 3); k.fill();
+    const on = i === 0 ? a1 : a2;
+    if (on > 0) { k.globalAlpha = on; k.fillStyle = i === 0 ? C.blue : C.g4; rr(k, ex - 15, ey + 37 - 20 * on, 30, 20 * on, 3); k.fill(); k.globalAlpha = 1; }
+    txt(k, i === 0 ? '借' : '貸', ex, ey + 62, `600 16px ${ZH}`, C.sub, 'center', 'middle');
+  });
+  if (ok > 0) { k.globalAlpha = ok; txt(k, '借 = 貸', px, 186, `700 20px ${ZH}`, C.blue, 'center', 'middle'); k.globalAlpha = 1; }
+  return ok > .5 ? 'BALANCED' : null;
+});
+
+// 02 應計（暫估）：9 月已收到服務、發票 10 月才到 → 9/30 先把費用估列進 9 月
+CELLS[1] = cell((k, w, h, u) => {
+  const a = eIO(P(u, 0.9, 1.9)), st = eOut(P(u, 1.8, 2.2));
+  const mid = 272;
+  // 月份欄
+  k.fillStyle = '#fff'; k.fillRect(0, 34, mid, h - 34);
+  k.fillStyle = C.g1; k.fillRect(mid, 34, w - mid, h - 34);
+  txt(k, '9 月', 22, 24, `700 18px ${ZH}`, C.ink, 'left', 'middle');
+  txt(k, '10 月', mid + 16, 24, `700 18px ${ZH}`, C.g4, 'left', 'middle');
+  k.strokeStyle = C.g4; k.lineWidth = 2; k.setLineDash([6, 5]); k.beginPath(); k.moveTo(mid, 10); k.lineTo(mid, h); k.stroke(); k.setLineDash([]);
+  hudBox(k, w, '9/30 月結');
+  // 9 月：已完成的服務（箱子 + 勾）
+  const bx = 70, by = 92;
+  k.fillStyle = C.g2; rr(k, bx - 30, by - 24, 60, 46, 5); k.fill();
+  k.fillStyle = C.g3; k.fillRect(bx - 30, by - 24, 60, 11); k.fillRect(bx - 5, by - 24, 10, 46);
+  k.fillStyle = '#fff'; k.beginPath(); k.arc(bx + 30, by + 20, 13, 0, 7); k.fill(); check(k, bx + 30, by + 20, 7, C.g5, 2.5);
+  txt(k, '9/25 服務完成', bx + 54, by - 6, `500 17px ${ZH}`, C.ink, 'left', 'middle');
+  txt(k, '費用已發生', bx + 54, by + 18, `400 15px ${ZH}`, C.sub, 'left', 'middle');
+  // 10 月：發票（虛線 = 還沒到）
+  const ix = mid + 64, iy = 58;
+  k.strokeStyle = C.g4; k.lineWidth = 1.8; k.setLineDash([5, 4]); rr(k, ix, iy, 66, 84, 4); k.stroke(); k.setLineDash([]);
+  for (let i = 0; i < 4; i++) hline(k, ix + 12, ix + 54 - (i % 2) * 12, iy + 22 + i * 13, C.g3, 2);
+  txt(k, '發票', ix + 33, iy + 106, `600 16px ${ZH}`, C.g5, 'center', 'middle');
+  txt(k, '10/15 才到', ix + 33, iy + 128, `400 14px ${ZH}`, C.sub, 'center', 'middle');
+  // 9 月帳：虛線框 → 藍色暫估標籤滑入
+  const lx = 18, ly = 150, lw = 236, lh = 40;
+  k.strokeStyle = C.g3; k.lineWidth = 1.5; rr(k, lx, ly, lw, lh, 8); k.stroke();
+  if (a < .02) txt(k, '9 月費用：—', lx + 14, ly + 21, `500 16px ${ZH}`, C.g4, 'left', 'middle');
+  if (a > 0) {
+    const x0 = ix - 20, x1 = lx + 4;   // 從發票的位置拉回 9 月
+    const cxp = lerp(x0, x1, a), cyp = lerp(iy + 40, ly + 5, a);
+    k.globalAlpha = Math.min(1, a * 3);
+    // 拉回的路徑
+    k.strokeStyle = C.blueM; k.lineWidth = 2; k.setLineDash([4, 4]);
+    k.beginPath(); k.moveTo(ix, iy + 50); k.quadraticCurveTo((ix + lx + 120) / 2, iy + 100, cxp + 120, cyp + 14); k.stroke(); k.setLineDash([]);
+    chip(k, '暫估費用 50,000', cxp, cyp, `700 16px ${ZH}`, C.blue, '#fff', 12, 30);
+    k.globalAlpha = 1;
+  }
+  if (st > 0) { k.globalAlpha = st; txt(k, '記入 9 月', lx + lw - 6, ly - 10, `600 14px ${ZH}`, C.blue, 'right', 'middle'); k.globalAlpha = 1; }
+  return null;
+});
+
+// 03 預付費用攤銷：一次付 12 個月，每月切一格轉成費用
+CELLS[2] = cell((k, w, h, u) => {
+  const N = 12, x0 = 22, sw = 24, gap = 2, top = 50, bot = 150, bh = 30;
+  txt(k, '預付保險費（資產）', x0, top - 12, `600 16px ${ZH}`, C.sub, 'left', 'alphabetic');
+  txt(k, '每月保險費用', x0, bot - 12, `600 16px ${ZH}`, C.sub, 'left', 'alphabetic');
+  let done = 0;
+  for (let i = 0; i < N; i++) {
+    const q = eIO(P(u, 0.6 + i * 0.22, 0.6 + i * 0.22 + 0.34));
+    if (q >= 1) done++;
+    const x = x0 + i * (sw + gap);
+    k.strokeStyle = C.g2; k.lineWidth = 1.2; k.setLineDash([3, 3]); rr(k, x + .5, top + .5, sw - 1, bh - 1, 3); k.stroke(); rr(k, x + .5, bot + .5, sw - 1, bh - 1, 3); k.stroke(); k.setLineDash([]);
+    const y = lerp(top, bot, q);
+    k.fillStyle = q > 0.5 ? C.blue : C.g4; rr(k, x, y, sw, bh, 3); k.fill();
+    txt(k, String(i + 1), x + sw / 2, bot + bh + 14, `500 12px ${EN}`, C.g4, 'center', 'middle');
+  }
+  // 右側讀數
+  const rx = 352;
+  k.fillStyle = C.g2; k.fillRect(rx - 14, 30, 1.5, 160);
+  txt(k, '預付餘額', rx, 52, `500 16px ${ZH}`, C.sub);
+  txt(k, fmt(120000 - done * 10000), rx, 82, `700 24px ${EN}`, C.ink);
+  txt(k, '已轉費用', rx, 128, `500 16px ${ZH}`, C.sub);
+  txt(k, fmt(done * 10000), rx, 158, `700 24px ${EN}`, C.blue);
+  txt(k, '每月 10,000', rx, 186, `500 14px ${ZH}`, C.g4);
+  return `${String(done).padStart(2, ' ')} / 12`;
+});
+CELLS[2].hud0 = ' 0 / 12';
+
+// 尚未製作的卡（Stage 3 製作）
+function placeholder(k, w, h, u, idx) {
+  k.fillStyle = C.g1; k.fillRect(0, 0, w, h);
+  txt(k, ITEMS[idx][0], w / 2, h / 2 - 8, `600 96px ${EN}`, '#E6E5E2', 'center', 'middle');
+  txt(k, 'Stage 3 製作', w / 2, h / 2 + 62, `500 16px ${ZH}`, C.faint, 'center', 'middle');
+}
+for (let i = 0; i < 24; i++) if (!CELLS[i]) CELLS[i] = (k, w, h, u) => placeholder(k, w, h, u, i);
+
+// ============================== PAGE ==============================
+function drawCard(ctx, idx, x, y, tau) {
+  const u = mod(tau + OFFS[idx % 8], CYC);
+  clear(CK);
+  CK.save(); const hud = CELLS[idx](CK, CW, CH, u); CK.restore();
+  CK.setTransform(1, 0, 0, 1, 0, 0); CK.globalAlpha = 1;
+  if (hud) hudBox(CK, CW, hud, hud === 'BALANCED' ? C.blue : C.g5);
+  ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.05)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 2;
+  rr(ctx, x, y, CW, CH, 14); ctx.fillStyle = '#fff'; ctx.fill(); ctx.restore();
+  ctx.save(); rr(ctx, x, y, CW, CH, 14); ctx.clip(); ctx.drawImage(CARD, x, y); ctx.restore();
+  ctx.strokeStyle = C.border; ctx.lineWidth = 2; rr(ctx, x + 1, y + 1, CW - 2, CH - 2, 13); ctx.stroke();
+  const [no, name, second] = ITEMS[idx];
+  const fNo = `500 38px ${EN}`, nw = tw(ctx, no, fNo);
+  let fs = 36; while (fs > 26 && nw + 16 + tw(ctx, name, `600 ${fs}px ${ZH}`) > CW - 8) fs -= 1;
+  txt(ctx, no, x + 4, y + CH + 46, fNo, C.blue);
+  txt(ctx, name, x + 4 + nw + 16, y + CH + 45, `600 ${fs}px ${ZH}`, C.ink);
+  txt(ctx, second, x + 6, y + CH + 79, `400 22px ${EN}`, C.sub);
+}
+function drawPage(ctx, pg, tau) {
+  const pd = PAGES[pg];
+  let x = MX; const y = 66, f1 = `600 31px ${ZH}`, fN = `500 33px ${EN}`;
+  txt(ctx, SERIES, x, y, f1, C.ink); x += tw(ctx, SERIES, f1) + 14;
+  txt(ctx, pd.no, x, y, fN, C.blue); x += tw(ctx, pd.no, fN) + 14;
+  ctx.fillStyle = C.faint; ctx.fillRect(x, y - 11, 30, 2); x += 44;
+  txt(ctx, pd.title, x, y, f1, C.ink);
+  txt(ctx, pd.note, W - MX, y - 2, `400 19px ${ZH}`, C.sub, 'right');
+  for (let i = 0; i < 8; i++) drawCard(ctx, pg * 8 + i, MX + (i % 2) * (CW + GAP), ROW0 + Math.floor(i / 2) * PITCH, tau);
+}
+function dots(ctx, pg) {
+  const y = H - 26, sp = 44;
+  for (let i = 0; i < 3; i++) { const on = i === pg, wd = on ? 36 : 12; ctx.fillStyle = on ? C.blue : C.faint; rr(ctx, W / 2 + (i - 1) * sp - wd / 2, y - 6, wd, 12, 6); ctx.fill(); }
+}
+function renderFrame(i) {
+  const t = i / FPS;
+  cx.setTransform(1, 0, 0, 1, 0, 0); cx.globalAlpha = 1;
+  cx.fillStyle = C.bg; cx.fillRect(0, 0, W, H);
+  drawPage(cx, PAGE_ONLY, t);
+  dots(cx, PAGE_ONLY);
+}
+window.renderFrame = renderFrame;
+window.prepareFrame = async () => { };
+document.fonts.ready.then(() => { window.READY = true; });
+
+if (!location.search.includes('render=1')) {
+  const m = location.search.match(/t=([\d.]+)/);
+  if (m) renderFrame(Math.round(parseFloat(m[1]) * FPS));
+  else { let i = 0; setInterval(() => { renderFrame(i); i = (i + 1) % window.N_FRAMES; }, 1000 / FPS); }
+}
+</script>
+</body></html>
