@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import NewsFeed from './components/NewsFeed';
 import { categories, getCategory } from './data/news';
 import { fetchPublishedArticles } from '../lib/articles';
@@ -55,7 +56,9 @@ export default async function HomePage() {
               </p>
 
               <h1 className="font-serif-tc mb-5 max-w-3xl text-3xl font-black leading-tight text-[var(--ink)] sm:text-4xl lg:text-[2.75rem] lg:leading-[1.25]">
-                {featured.title}
+                <Link href={`/news/${featured.slug}`} className="transition-colors hover:text-[var(--seal)]">
+                  {featured.title}
+                </Link>
               </h1>
 
               <p className="mb-6 max-w-2xl text-base leading-relaxed text-[var(--ink-soft)]">

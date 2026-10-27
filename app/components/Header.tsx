@@ -49,6 +49,12 @@ export default function Header() {
           >
             今日新聞
           </Link>
+          <Link
+            href="/data"
+            className="hidden text-sm text-[var(--ink-soft)] transition-colors hover:text-[var(--seal)] sm:block"
+          >
+            數據看板
+          </Link>
           <ThemeToggle />
         </div>
       </div>
