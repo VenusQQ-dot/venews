@@ -14,6 +14,7 @@
 
 import Parser from "rss-parser";
 import nodemailer from "nodemailer";
+import { digestFilmHtml } from "./digestFilm.mjs";
 
 const FEEDS = [
   { name: "OpenAI News", url: "https://openai.com/news/rss.xml" },
@@ -212,6 +213,9 @@ async function main() {
   } else {
     bodyHtml = plainListHtml(items);
   }
+
+  // 附上 Lemo-Opuscar 短片 prompt,只用原始素材組成,不額外呼叫 API
+  bodyHtml += digestFilmHtml(items, taipeiDateString());
 
   await sendEmail({ subject, bodyHtml });
 }
