@@ -89,6 +89,12 @@ npm run dev
 - `slug` — 文章唯一識別碼(自動產生或自訂)
 - 其他欄位皆選用,留空時使用預設值
 
+## 新聞轉短片 Lemo-Opuscar(選用)
+
+`lib/filmBrief.ts` 依分類幫每則新聞挑一種 [Lemo-Opuscar](https://github.com/lemomo-ai/lemo-opuscar)
+風格並產生製片 prompt,貼進本機的 Claude Code 就能做成純程式碼算繪的短片。
+安裝與對照表見 [`docs/lemo-opuscar.md`](docs/lemo-opuscar.md)。
+
 ## 部署到 Vercel
 
 [vercel.com](https://vercel.com) → Import 此 repo → 加入上面四個環境變數 → Deploy。
