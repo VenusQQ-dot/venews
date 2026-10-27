@@ -5,7 +5,8 @@
 1. 抓取多個 AI 新聞與研究 RSS 來源（OpenAI、Google AI、Hugging Face、TechCrunch、VentureBeat、The Verge、MIT Technology Review、arXiv cs.AI）。
 2. 篩選出過去 24 小時內的新內容。
 3. 透過 Claude API（`claude-opus-4-8`）彙整成繁體中文電子報：今日焦點、重要新聞、趨勢觀察、新研究與新發現。
-4. 以 Gmail SMTP 寄到你的信箱。
+4. 信末附上「🎬 今日短片 prompt」:由當日素材組成的 [Lemo-Opuscar](https://github.com/lemomo-ai/lemo-opuscar) 製片需求(`news-package` 風格、60 秒),貼進本機 Claude Code 即可做成新聞短片,見 [`lemo-opuscar.md`](lemo-opuscar.md)。
+5. 以 Gmail SMTP 寄到你的信箱。
 
 ## 啟用前必須完成的設定
 
