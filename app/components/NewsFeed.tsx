@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { Article, Category } from '../data/news';
 
@@ -99,7 +100,9 @@ export default function NewsFeed({
                   </div>
 
                   <h3 className="font-serif-tc mb-2 text-lg font-bold leading-snug text-[var(--ink)]">
-                    {article.title}
+                    <Link href={`/news/${article.slug}`} className="transition-colors hover:text-[var(--seal)]">
+                      {article.title}
+                    </Link>
                   </h3>
                   <p className="mb-4 line-clamp-3 flex-1 text-sm leading-relaxed text-[var(--ink-soft)]">
                     {article.summary}

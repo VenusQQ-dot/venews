@@ -5,6 +5,7 @@ Next.js 新聞網站,分三階段開發:
 - ✅ **Phase 1** — 靜態新聞首頁(報紙風設計、分類篩選、深色模式)
 - ✅ **Phase 2** — Supabase 資料庫 + `/admin` 後台發布文章
 - ✅ **自動 AI 新聞編輯部** — Claude 每日搜尋、改寫、查證 AI 新聞,存為草稿等你確認
+- ✅ **Altair 互動圖表** — 文章可內嵌 Vega-Altair / Vega-Lite 圖表,`/data` 數據看板
 - ⬜ **Phase 3** — Redis 語意搜尋(用自然語言找新聞)
 
 ## 本機開發
@@ -51,6 +52,12 @@ npm run dev
 
 流水線程式:`lib/newsroom.ts`(偵察/撰稿/主編三個 agent)、`lib/ingest.ts`(寫入草稿)、
 `app/api/ingest/route.ts`(排程端點)。所有產出**預設為草稿**,發布與否永遠由你決定。
+
+## Altair 互動圖表
+
+在文章內容放 ```` ```altair ```` 區塊(內容為 Python Altair 的 `chart.to_json()`),
+文章頁 `/news/[slug]` 就會顯示可互動、跟著深淺色切換的圖表;`/data` 為新聞數據看板。
+Python 範例腳本:`scripts/altair_to_venews.py`。完整說明見 [`docs/altair-charts.md`](docs/altair-charts.md)。
 
 ## 從外部 Claude Routines 發佈文章(選用)
 

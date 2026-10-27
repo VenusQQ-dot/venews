@@ -14,6 +14,7 @@ export type Article = {
   publishedAt: string; // ISO 字串
   readMins: number;
   featured?: boolean;
+  content?: string; // Markdown,可含 ```vega-lite / ```altair 圖表區塊
 };
 
 export const categories: Category[] = [
@@ -66,6 +67,35 @@ export const articles: Article[] = [
     author: '陳映竹',
     publishedAt: '2026-06-11T16:30:00+08:00',
     readMins: 4,
+    content: `
+央行今日召開第二季理監事會議,政策利率維持不變,同時下修全年通膨預估。
+
+## 通膨預估一路下修
+
+下圖為本年度各次理監事會議公布的 CPI 年增率預估(示意資料):
+
+\`\`\`altair
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": {"text": "全年 CPI 年增率預估", "subtitle": "單位:%(示意資料)"},
+  "description": "央行歷次會議對全年 CPI 年增率的預估,由 2.1% 逐步下修至 1.7%",
+  "data": {"values": [
+    {"會議": "去年 Q4", "預估": 2.1},
+    {"會議": "今年 Q1", "預估": 1.9},
+    {"會議": "今年 Q2", "預估": 1.7}
+  ]},
+  "mark": {"type": "line", "point": true, "strokeWidth": 2.5},
+  "encoding": {
+    "x": {"field": "會議", "type": "ordinal", "sort": null, "axis": {"labelAngle": 0}},
+    "y": {"field": "預估", "type": "quantitative", "scale": {"domain": [1.4, 2.2]}, "title": "年增率 (%)"},
+    "tooltip": [{"field": "會議"}, {"field": "預估", "title": "預估 (%)"}]
+  },
+  "height": 240
+}
+\`\`\`
+
+市場解讀為偏鴿訊號,下半年是否降息仍視美國聯準會動向而定。
+`,
   },
   {
     slug: 'palace-museum-digital-archive',

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { categories, getCategoryById, getTutorialBySlug } from '../../data/tutorials';
 import { notFound } from 'next/navigation';
+import RichContent from '../../components/RichContent';
 
 interface Props {
   params: Promise<{ category: string; slug: string }>;
@@ -10,81 +11,6 @@ export async function generateStaticParams() {
   return categories.flatMap(c =>
     c.tutorials.map(t => ({ category: c.id, slug: t.slug }))
   );
-}
-
-function escapeHtml(s: string) {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-// 只允許 http(s) 與站內相對連結，阻擋 javascript: 等危險協議
-function sanitizeUrl(url: string) {
-  const trimmed = url.trim();
-  if (/^(https?:\/\/|\/|#)/i.test(trimmed)) return trimmed;
-  return '#';
-}
-
-function renderMarkdown(text: string) {
-  if (!text) return '';
-  const lines = text.trim().split('\n');
-  const result: string[] = [];
-  let inCode = false;
-  let codeLang = '';
-  let codeLines: string[] = [];
-
-  for (const line of lines) {
-    if (line.startsWith('```')) {
-      if (!inCode) {
-        inCode = true;
-        codeLang = line.slice(3).trim();
-        codeLines = [];
-      } else {
-        result.push(
-          `<pre><code class="language-${escapeHtml(codeLang)}">${codeLines.map(escapeHtml).join('\n')}</code></pre>`
-        );
-        inCode = false;
-        codeLang = '';
-        codeLines = [];
-      }
-      continue;
-    }
-    if (inCode) {
-      codeLines.push(line);
-      continue;
-    }
-
-    const esc = escapeHtml(line);
-
-    if (line.startsWith('### ')) {
-      result.push(`<h3>${esc.slice(4)}</h3>`);
-    } else if (line.startsWith('## ')) {
-      result.push(`<h2>${esc.slice(3)}</h2>`);
-    } else if (line.startsWith('# ')) {
-      result.push(`<h1>${esc.slice(2)}</h1>`);
-    } else if (line.startsWith('> ')) {
-      result.push(`<blockquote>${esc.slice(2)}</blockquote>`);
-    } else if (line.match(/^\d+\. /)) {
-      result.push(`<li>${esc.replace(/^\d+\. /, '')}</li>`);
-    } else if (line.startsWith('- ') || line.startsWith('* ')) {
-      result.push(`<li>${esc.slice(2)}</li>`);
-    } else if (line.trim() === '') {
-      result.push('<br/>');
-    } else {
-      // inline formatting（在已跳脫的文字上套用）
-      const formatted = esc
-        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        .replace(/`(.+?)`/g, '<code>$1</code>')
-        .replace(/\[(.+?)\]\((.+?)\)/g, (_m, label, url) =>
-          `<a href="${sanitizeUrl(url)}" rel="noopener noreferrer">${label}</a>`
-        );
-      result.push(`<p>${formatted}</p>`);
-    }
-  }
-
-  return result.join('');
 }
 
 export default async function TutorialPage({ params }: Props) {
@@ -97,8 +23,6 @@ export default async function TutorialPage({ params }: Props) {
   const currentIndex = category.tutorials.findIndex(t => t.slug === slug);
   const prevTutorial = currentIndex > 0 ? category.tutorials[currentIndex - 1] : null;
   const nextTutorial = currentIndex < category.tutorials.length - 1 ? category.tutorials[currentIndex + 1] : null;
-
-  const htmlContent = renderMarkdown(tutorial.content || '');
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -193,10 +117,7 @@ export default async function TutorialPage({ params }: Props) {
           <div className="border-t border-[var(--border)] mb-8" />
 
           {/* Content */}
-          <article
-            className="prose-dark"
-            dangerouslySetInnerHTML={{ __html: htmlContent }}
-          />
+          <RichContent className="prose-dark" content={tutorial.content || ''} />
 
           {/* Navigation between tutorials */}
           <div className="mt-12 pt-8 border-t border-[var(--border)] grid grid-cols-1 sm:grid-cols-2 gap-4">
