@@ -1,0 +1,105 @@
+<!doctype html>
+<!--
+  v2 · 報紙頭版版（三欄）
+  事實來源同 v1：lib/newsroom.ts、lib/ingest.ts、app/api/ingest/route.ts、vercel.json
+-->
+<html lang="zh-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080">
+<title>AI 新聞編輯部 v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f6f5f2; --card: #fdfcfa; --ink: #1f2227; --ink-soft: #4b4f55;
+    --ink-faint: #84888f; --seal: #c5392f; --seal-ink: #ffffff;
+    --hairline: #e2dfd8; --hairline-strong: #c9c5bb;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1350px; overflow: hidden; }
+  body { background: var(--paper); color: var(--ink); font-family: "Noto Sans TC", sans-serif;
+         padding: 64px 72px 56px; display: flex; flex-direction: column; }
+
+  .mast { display: flex; justify-content: space-between; align-items: baseline;
+          padding-bottom: 16px; border-bottom: 6px double var(--ink); }
+  .mast .name { font-family: "Noto Serif TC", serif; font-weight: 900; font-size: 44px; }
+  .mast .meta { font-size: 26px; color: var(--ink-soft); }
+
+  h1 { font-family: "Noto Serif TC", serif; font-weight: 900; font-size: 92px; line-height: 1.12; margin-top: 40px; }
+  h1 .accent { color: var(--seal); }
+  .dek { font-size: 34px; line-height: 1.45; color: var(--ink-soft); margin-top: 24px; }
+
+  .cols { margin-top: 40px; padding-top: 32px; border-top: 1px solid var(--ink);
+          display: grid; grid-template-columns: repeat(3, 1fr); }
+  .col { padding: 0 32px; border-left: 1px solid var(--hairline-strong); }
+  .col:first-child { padding-left: 0; border-left: 0; }
+  .col:last-child { padding-right: 0; }
+  .col .no { font-size: 26px; font-weight: 500; color: var(--ink-faint); }
+  .col h2 { font-family: "Noto Serif TC", serif; font-weight: 700; font-size: 44px; line-height: 1.25; margin-bottom: 16px; }
+  .col p { font-size: 30px; line-height: 1.5; text-wrap: balance; }
+
+  .box { margin-top: 40px; border-top: 6px double var(--ink); padding-top: 32px;
+         display: grid; grid-template-columns: 180px 1fr; gap: 32px; align-items: center; flex: 1; }
+  .box .big { font-family: "Noto Serif TC", serif; font-weight: 900; font-size: 200px; line-height: 1; }
+  .box h3 { font-family: "Noto Serif TC", serif; font-weight: 700; font-size: 44px; line-height: 1.25; }
+  .box p { font-size: 30px; line-height: 1.5; margin-top: 8px; }
+  .box .facts { font-size: 26px; color: var(--ink-soft); margin-top: 16px; }
+
+  footer { padding-top: 24px; border-top: 1px solid var(--hairline-strong);
+           display: flex; justify-content: space-between; align-items: center; }
+  .id { display: flex; align-items: center; gap: 16px; }
+  .seal { width: 64px; height: 64px; border-radius: 4px; background: var(--seal); color: var(--seal-ink);
+          font-family: "Noto Serif TC", serif; font-weight: 900; font-size: 40px;
+          display: flex; align-items: center; justify-content: center; }
+  .id .brand { font-family: "Noto Serif TC", serif; font-weight: 700; font-size: 30px; line-height: 1.2; }
+  .id .tag { font-size: 26px; color: var(--ink-faint); line-height: 1.3; }
+  .src { font-size: 26px; color: var(--ink-faint); text-align: right; line-height: 1.35; }
+</style>
+</head>
+<body>
+  <header class="mast">
+    <span class="name">AI 工作流特刊</span>
+    <span class="meta">2026 年 11 月 4 日 · 第 1 期</span>
+  </header>
+
+  <h1>AI 寫的新聞，<br>先過 AI 主編<span class="accent">退稿</span>這關</h1>
+  <p class="dek">三個 agent 接力，每天 00:00 UTC 自動開工。</p>
+
+  <section class="cols">
+    <article class="col">
+      <span class="no">第一版</span>
+      <h2>偵察</h2>
+      <p>搜尋 24 小時內的 AI 新聞，附來源網址。</p>
+    </article>
+    <article class="col">
+      <span class="no">第二版</span>
+      <h2>撰稿</h2>
+      <p>讀原文改寫成繁中，不准虛構數字、人名。</p>
+    </article>
+    <article class="col">
+      <span class="no">第三版</span>
+      <h2>主編</h2>
+      <p>只查來源與品質，任一項不過就退稿。</p>
+    </article>
+  </section>
+
+  <section class="box">
+    <div class="big">1</div>
+    <div>
+      <h3>每天只自動上線一篇</h3>
+      <p>通過查證的稿件中，最重要的一篇自動發布，其餘存成草稿，等人到後台決定。</p>
+      <p class="facts">排程每次預設 2 則候選，上限 8 則</p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="id" data-brand="identity">
+      <div class="seal" aria-hidden="true">聞</div>
+      <div><div class="brand">VeNews 鳴新聞</div><div class="tag">每日要聞，值得慢讀。</div></div>
+    </div>
+    <div class="src">來源：VeNews 原始碼<br>lib/newsroom.ts、lib/ingest.ts</div>
+  </footer>
+</body>
+</html>
