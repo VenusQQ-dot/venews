@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080">
+<title>This Page, Measured</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Instrument+Serif&display=block" rel="stylesheet">
+<style>
+  /* ---------- tokens ---------- */
+  :root{
+    --paper:#F2EEE6;   /* ground */
+    --ink:#16130F;     /* content */
+    --accent:#E5361B;  /* annotation only */
+    --muted:#7A7468;   /* secondary text */
+    --rule:#CFC8BB;    /* hairlines */
+
+    --serif:"Instrument Serif", "Times New Roman", serif;
+    --sans:"Archivo", "Helvetica Neue", Arial, sans-serif;
+
+    /* one ratio: 12 x 1.25^n */
+    --base:12px; --ratio:1.25;
+    --s0:12px; --s1:15px; --s2:18.75px; --s3:23.4375px; --s4:29.2969px;
+    --s5:36.6211px; --s6:45.7764px; --s7:57.2205px; --s8:71.5256px;
+    --s9:89.407px; --s11:139.6984px;
+
+    /* grid */
+    --cols:12; --gutter:20px; --margin:80px;
+    /* spacing: 4 · 8 · 16 · 24 · 40 */
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--paper)}
+  body{width:1080px;height:1350px;overflow:hidden;color:var(--ink);font-family:var(--sans);font-size:var(--s1);line-height:1.4;-webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 1}
+
+  .page{position:relative;width:1080px;height:1350px;background:var(--paper)}
+
+  /* ---------- print furniture (bleed band) ---------- */
+  .crop{position:absolute;background:var(--ink)}
+  .crop.h{height:1px;width:24px}
+  .crop.v{width:1px;height:24px}
+  .reg{position:absolute;width:20px;height:20px;border:1px solid var(--ink);border-radius:50%}
+  .reg::before,.reg::after{content:"";position:absolute;background:var(--ink)}
+  .reg::before{left:-6px;right:-6px;top:9px;height:1px}
+  .reg::after{top:-6px;bottom:-6px;left:9px;width:1px}
+  .slug{position:absolute;left:80px;top:1318px;font-size:var(--s0);color:var(--muted);letter-spacing:.02em;white-space:nowrap}
+  .bar{position:absolute;right:80px;top:1318px;display:flex;height:16px}
+  .bar i{display:block;width:24px;height:16px}
+
+  /* ---------- live area ---------- */
+  .live{position:absolute;left:var(--margin);top:72px;width:920px}
+  .grid{display:grid;grid-template-columns:repeat(var(--cols),1fr);column-gap:var(--gutter)}
+
+  .label{font-size:var(--s0);font-weight:600;letter-spacing:.08em;text-transform:uppercase;line-height:1.4}
+  .label .n{color:var(--muted);font-weight:500;margin-right:8px}
+  .mod{border-top:1px solid var(--ink);padding-top:8px}
+
+  header.top{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:8px;border-bottom:1px solid var(--ink)}
+  header.top span{font-size:var(--s0);letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+  header.top span + span{color:var(--muted);font-weight:500}
+
+  /* headline + redlines */
+  .hero{position:relative;margin-top:24px;height:288px}
+  h1{font-family:var(--serif);font-weight:400;font-size:var(--s11);line-height:.9;letter-spacing:-.01em}
+  h1 span{display:block;width:max-content}
+  .rl{position:absolute;height:1px;background:var(--accent)}
+  .rl-t{position:absolute;right:0;font-size:var(--s0);color:var(--accent);white-space:nowrap;line-height:1;transform:translateY(-16px)}
+  .dim{position:absolute;width:1px;background:var(--accent)}
+  .dim::before,.dim::after{content:"";position:absolute;left:-4px;width:9px;height:1px;background:var(--accent)}
+  .dim::before{top:0}.dim::after{bottom:0}
+  .dim-t{position:absolute;font-size:var(--s0);color:var(--accent);white-space:nowrap;line-height:1}
+
+  .deck{font-size:var(--s2);line-height:1.4;max-width:640px;margin-top:16px}
+
+  /* module rows */
+  .row1{margin-top:32px}
+  .row2{margin-top:32px}
+
+  /* type scale */
+  .ts{grid-column:span 8}
+  .spec{display:flex;align-items:baseline;gap:14px;margin-top:24px;height:142px;padding-top:0}
+  .spec div{display:flex;flex-direction:column}
+  .spec b{font-family:var(--serif);font-weight:400;line-height:1}
+  .spec small{font-size:var(--s0);color:var(--muted);margin-top:8px;line-height:1}
+  .ts .note{margin-top:16px;display:flex;justify-content:space-between;color:var(--muted)}
+  .ts .note strong{color:var(--ink);font-weight:500}
+
+  /* colour */
+  .col{grid-column:span 4}
+  .sw{display:grid;grid-template-columns:32px 1fr auto;column-gap:16px;align-items:center;padding:6px 0;border-bottom:1px solid var(--rule)}
+  .sw:first-of-type{margin-top:8px}
+  .sw i{display:block;width:32px;height:32px}
+  .sw .nm{line-height:1.3}
+  .sw .nm em{font-style:normal;color:var(--muted);display:block;font-size:var(--s0)}
+  .sw .cr{font-size:var(--s0);text-align:right;color:var(--muted);line-height:1.3}
+  .sw .cr b{display:block;color:var(--ink);font-weight:500;font-size:var(--s1)}
+
+  /* wireframe */
+  .wf{grid-column:span 5}
+  .wf-in{display:flex;gap:24px;margin-top:16px}
+  .mini{position:relative;flex:none;border:1px solid var(--ink);background:var(--paper)}
+  .mini .c{position:absolute;top:0;bottom:0;background:var(--rule)}
+  .mini .b{position:absolute;border:1px solid var(--ink);background:var(--paper)}
+  .mini .b.me{border-color:var(--accent)}
+  .wf p{color:var(--muted)}
+  .wf p strong{color:var(--ink);font-weight:500}
+  .wf p + p{margin-top:8px}
+
+  /* cut list */
+  .cut{grid-column:span 7}
+  .cut ol{list-style:none;margin-top:8px}
+  .cut li{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--rule);white-space:nowrap}
+  .cut li s{text-decoration-color:var(--accent);text-decoration-thickness:2px}
+  .cut li span{color:var(--muted)}
+
+  /* counts */
+  .counts{margin-top:40px}
+  .counts .grid{margin-top:8px}
+  .k{grid-column:span 2;border-left:1px solid var(--rule);padding-left:12px}
+  .k:first-child{border-left:0;padding-left:0}
+  .k b{display:block;font-family:var(--serif);font-weight:400;font-size:var(--s7);line-height:1}
+  .k span{display:block;font-size:var(--s0);color:var(--muted);margin-top:4px;line-height:1.3}
+</style>
+</head>
+<body>
+<div class="page" id="page">
+
+  <!-- crop marks at trim (40px in) -->
+  <i class="crop h" style="left:8px;top:40px"></i><i class="crop v" style="left:40px;top:8px"></i>
+  <i class="crop h" style="right:8px;top:40px"></i><i class="crop v" style="right:40px;top:8px"></i>
+  <i class="crop h" style="left:8px;bottom:40px"></i><i class="crop v" style="left:40px;bottom:8px"></i>
+  <i class="crop h" style="right:8px;bottom:40px"></i><i class="crop v" style="right:40px;bottom:8px"></i>
+  <i class="reg" style="left:530px;top:10px"></i>
+
+  <main class="live">
+    <header class="top" data-mod>
+      <span>Specimen sheet 01</span>
+      <span>Graphic design, shown working</span>
+    </header>
+
+    <section class="hero" id="hero" data-mod>
+      <h1 id="h1"><span id="l1">This page,</span><span id="l2">measured.</span></h1>
+    </section>
+
+    <p class="deck" data-mod>Portfolios ask you to trust them. This one shows its working: every figure in red is read off the layout, by the layout, at the moment it renders.</p>
+
+    <div class="grid row1">
+      <section class="mod ts" data-mod>
+        <div class="label"><span class="n">01</span>Type scale</div>
+        <div class="spec" id="spec"></div>
+        <div class="note"><span>Every size on this page is <strong>12 × 1.25ⁿ</strong>.</span><span id="nsizes"></span></div>
+      </section>
+
+      <section class="mod col" data-mod>
+        <div class="label"><span class="n">02</span>Colour</div>
+        <div id="swatches"></div>
+      </section>
+    </div>
+
+    <div class="grid row2">
+      <section class="mod wf" data-mod>
+        <div class="label"><span class="n">03</span>Grid</div>
+        <div class="wf-in">
+          <div class="mini" id="mini"></div>
+          <div>
+            <p>This page, drawn from its own boxes at <strong id="scale"></strong>.</p>
+            <p><strong id="gridspec"></strong></p>
+            <p>Red marks this panel.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="mod cut" data-mod>
+        <div class="label"><span class="n">04</span>Cut from this page</div>
+        <ol>
+          <li><s>Purple-to-blue gradient</s><span>flat paper reads as print</span></li>
+          <li><s>Drop shadows</s><span>hairlines carry the structure</span></li>
+          <li><s>A third typeface</s><span>two is a system, three a sampler</span></li>
+          <li><s>Centred text</s><span>one left edge does the work</span></li>
+          <li><s>Emoji as icons</s><span>draw it, or leave it out</span></li>
+          <li><s>Stock laptop photo</s><span>nobody chose it</span></li>
+          <li><s>An inspiring closing line</s><span>end on the data</span></li>
+        </ol>
+      </section>
+    </div>
+
+    <section class="mod counts" data-mod>
+      <div class="label"><span class="n">05</span>Audit, counted by the page at render time</div>
+      <div class="grid" id="counts"></div>
+    </section>
+  </main>
+
+  <div class="slug">this-page-measured.html  ·  Proof 3  ·  1080 × 1350 px  ·  04.11.2026  ·  Designed and set by Claude</div>
+  <div class="bar"><i style="background:var(--ink)"></i><i style="background:var(--accent)"></i><i style="background:var(--muted)"></i><i style="background:var(--rule)"></i><i style="background:var(--paper);outline:1px solid var(--rule);outline-offset:-1px"></i></div>
+</div>
+
+<script>
+(async function(){
+  await document.fonts.ready;
+  const $ = s => document.querySelector(s);
+  const css = getComputedStyle(document.documentElement);
+  const v = n => css.getPropertyValue(n).trim();
+  const r1 = x => (Math.round(x*10)/10).toString();
+
+  /* ---------- 01 type scale specimen ---------- */
+  const base = parseFloat(v('--base')), ratio = parseFloat(v('--ratio'));
+  const spec = $('#spec');
+  for(let n=0;n<=9;n++){
+    const px = base*Math.pow(ratio,n);
+    const d = document.createElement('div');
+    d.innerHTML = `<b style="font-size:${v('--s'+n) || px+'px'}">Ag</b><small>${r1(px)}</small>`;
+    spec.appendChild(d);
+  }
+
+  /* ---------- 02 colour, with live WCAG contrast ---------- */
+  const lum = hex => { const c=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255).map(u=>u<=.03928?u/12.92:Math.pow((u+.055)/1.055,2.4)); return .2126*c[0]+.7152*c[1]+.0722*c[2]; };
+  const contrast = (a,b) => { const A=lum(a),B=lum(b); return (Math.max(A,B)+.05)/(Math.min(A,B)+.05); };
+  const paper = v('--paper');
+  const roles = [['--ink','Ink','content'],['--accent','Accent','annotation only'],['--muted','Muted','secondary text'],['--rule','Rule','hairlines'],['--paper','Paper','ground']];
+  $('#swatches').innerHTML = roles.map(([k,name,job])=>{
+    const hex=v(k); const c=contrast(hex,paper);
+    const grade = k==='--paper' ? 'ground' : c>=7?'AAA':c>=4.5?'AA':c>=3?'AA large':'decorative';
+    const ring = k==='--paper' ? 'outline:1px solid var(--rule);outline-offset:-1px;' : '';
+    return `<div class="sw"><i style="background:${hex};${ring}"></i><div class="nm">${name} ${hex}<em>${job}</em></div><div class="cr"><b>${k==='--paper'?'—':c.toFixed(1)+':1'}</b>${grade}</div></div>`;
+  }).join('');
+
+  /* ---------- hero redlines, from real font metrics ---------- */
+  const hero=$('#hero'), h1=$('#h1'), l1=$('#l1'), l2=$('#l2');
+  const fs = parseFloat(getComputedStyle(h1).fontSize);
+  const lh = parseFloat(getComputedStyle(h1).lineHeight);
+  const ctx = document.createElement('canvas').getContext('2d');
+  ctx.font = `400 ${fs}px ${getComputedStyle(h1).fontFamily}`;
+  const mH = ctx.measureText('H'), mx = ctx.measureText('x'), md = ctx.measureText('d');
+  const asc = mH.fontBoundingBoxAscent, desc = mH.fontBoundingBoxDescent;
+  const half = (lh-(asc+desc))/2;
+  const hb = hero.getBoundingClientRect();
+  const top1 = l1.getBoundingClientRect().top-hb.top, top2 = l2.getBoundingClientRect().top-hb.top;
+  const base1 = top1+half+asc, base2 = top2+half+asc;
+  const w2 = l2.getBoundingClientRect().width;
+  const capH = mH.actualBoundingBoxAscent, xH = mx.actualBoundingBoxAscent, ascH = md.actualBoundingBoxAscent;
+  const W = hero.clientWidth;
+  const line = (y, x0, text) => {
+    const el=document.createElement('div'); el.className='rl'; el.style.cssText=`top:${y}px;left:${x0}px;width:${W-x0}px`; hero.appendChild(el);
+    const t=document.createElement('div'); t.className='rl-t'; t.style.top=y+'px'; t.textContent=text; hero.appendChild(t);
+  };
+  const x0 = 0;
+  line(base2-ascH, x0, `ascender  ${r1(ascH)} px`);
+  line(base2-xH,   x0, `x-height  ${r1(xH)} px  ·  ${(xH/fs).toFixed(3)} em`);
+  line(base2,      x0, `baseline  ·  set at ${r1(fs)} px`);
+  // leading dimension between baselines
+  const dx = W-200;
+  const d=document.createElement('div'); d.className='dim'; d.style.cssText=`left:${dx}px;top:${base1}px;height:${base2-base1}px`; hero.appendChild(d);
+  const bl1=document.createElement('div'); bl1.className='rl'; bl1.style.cssText=`top:${base1}px;left:${dx-24}px;width:48px`; hero.appendChild(bl1);
+  const dt=document.createElement('div'); dt.className='dim-t'; dt.style.cssText=`left:${dx+12}px;top:${base2-40}px`; dt.textContent=`leading ${r1(base2-base1)} px`; hero.appendChild(dt);
+  // width dimension under "measured."
+  const wy = base2+28;
+  const wl=document.createElement('div'); wl.className='rl'; wl.style.cssText=`top:${wy}px;left:0;width:${w2}px`; hero.appendChild(wl);
+  [0,w2].forEach(x=>{const t=document.createElement('div'); t.className='rl'; t.style.cssText=`top:${wy-4}px;left:${x}px;width:1px;height:9px`; hero.appendChild(t);});
+  const wt=document.createElement('div'); wt.className='dim-t'; wt.style.cssText=`left:${w2+12}px;top:${wy-6}px`; wt.textContent=`${r1(w2)} px  ·  cap height ${r1(capH)} px`; hero.appendChild(wt);
+
+  /* ---------- 03 wireframe of this page, from its own boxes ---------- */
+  const page=$('#page').getBoundingClientRect();
+  const mini=$('#mini'), S=0.16;
+  mini.style.width=1080*S+'px'; mini.style.height=1350*S+'px';
+  const m=parseFloat(v('--margin')), g=parseFloat(v('--gutter')), cols=parseInt(v('--cols'));
+  const colW=(1080-2*m-(cols-1)*g)/cols;
+  for(let i=0;i<cols;i++){const c=document.createElement('i'); c.className='c'; c.style.left=(m+i*(colW+g))*S+'px'; c.style.width=colW*S+'px'; mini.appendChild(c);}
+  const self = mini.closest('[data-mod]');
+  const drawBoxes = () => {
+    mini.querySelectorAll('.b').forEach(b=>b.remove());
+    document.querySelectorAll('[data-mod]').forEach(el=>{
+      const r=el.getBoundingClientRect(); const b=document.createElement('i');
+      b.className='b'+(el===self?' me':'');
+      b.style.cssText=`left:${(r.left-page.left)*S}px;top:${(r.top-page.top)*S}px;width:${r.width*S}px;height:${r.height*S}px`;
+      mini.appendChild(b);
+    });
+  };
+  $('#scale').textContent = `${Math.round(S*100)}%`;
+  $('#gridspec').textContent = `${cols} cols · ${g} px gutter · ${m} px margin`;
+
+  /* ---------- 05 audit ---------- */
+  const audit = () => {
+    const all=[...document.querySelectorAll('body *')].filter(e=>!['SCRIPT','STYLE','LINK','META','TITLE','BR'].includes(e.tagName));
+    const textEls=all.filter(e=>[...e.childNodes].some(n=>n.nodeType===3&&n.textContent.trim()));
+    const fams=new Set(), sizes=new Set(), colours=new Set(); let centred=0, off=0;
+    textEls.forEach(e=>{const s=getComputedStyle(e);
+      fams.add(s.fontFamily.split(',')[0].replace(/["']/g,'').trim());
+      sizes.add(Math.round(parseFloat(s.fontSize)*100)/100);
+      if(s.textAlign==='center') centred++;
+    });
+    const add=c=>{ if(c && !/rgba\(.*,\s*0\)$/.test(c) && c!=='transparent') colours.add(c.replace(/\s/g,'')); };
+    [document.documentElement,document.body,...all].forEach(e=>{const s=getComputedStyle(e);
+      if([...e.childNodes].some(n=>n.nodeType===3&&n.textContent.trim())) add(s.color);
+      add(s.backgroundColor);
+      ['Top','Right','Bottom','Left'].forEach(k=>{ if(parseFloat(s['border'+k+'Width'])>0 && s['border'+k+'Style']!=='none') add(s['border'+k+'Color']); });
+      if(s.textDecorationLine.includes('line-through')) add(s.textDecorationColor);
+      if(parseFloat(s.outlineWidth)>0 && s.outlineStyle!=='none') add(s.outlineColor);
+    });
+    sizes.forEach(px=>{const n=Math.log(px/base)/Math.log(ratio); if(Math.abs(n-Math.round(n))>0.01) off++;});
+    $('#nsizes').innerHTML = `<strong>${sizes.size}</strong> sizes in use`;
+    const k=[[fams.size,'typefaces',''],[colours.size,'colours',''],[sizes.size,'type sizes',''],[off,'sizes off the scale',''],[centred,'centred text blocks',''],[all.length,'elements on the page','']];
+    $('#counts').innerHTML = k.map(([n,l])=>`<div class="k"><b>${n}</b><span>${l}</span></div>`).join('');
+    return {fams:[...fams],colours:[...colours],sizes:[...sizes].sort((a,b)=>a-b),centred,off,n:all.length};
+  };
+  // run twice so the counts include themselves, then draw the wireframe last
+  audit(); const res = audit(); drawBoxes(); const res2 = audit();
+  document.documentElement.dataset.ready='1';
+  window.__audit = res2;
+})();
+</script>
+</body>
+</html>
