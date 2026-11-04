@@ -10,6 +10,7 @@ graphic-designer/
   examples/                                   Step 3: 5 graphics you like (to do, add yours)
   .claude/skills/remove-ai-design-slop/       Step 4: design skill (installed)
   before/                                     empty-folder baseline test
+  carousel/index.html                         swipeable seat-card carousel (open directly, edit + export)
 ```
 
 ## Step 2 prompt (run after 5 graphics are in examples/)

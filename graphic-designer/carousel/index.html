@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Seat Carousel</title>
+<!--
+  Seat Carousel：手風琴式直式卡片輪播（單檔，可直接開啟）
+  - 內容全部在 <script id="seed" type="application/json">，可在下方編輯面板即時修改
+  - 互動：左右滑動、點擊側邊細條、鍵盤 ← →、自動播放（圓環按鈕暫停/播放）
+  - 匯出：「匯出 HTML」會產生帶目前內容的獨立檔；「匯出/匯入 JSON」搬移內容
+  - prefers-reduced-motion：關閉自動播放與過場動畫
+-->
+<style>
+  :root{
+    --page:#F4F1EA; --ink:#1F1D1A; --muted:#6B665E; --line:#D9D3C7; --panel:#FFFFFF;
+    --danger:#B3261E; --focus:#1F1D1A;
+    --gap:6px; --radius:18px; --ease:cubic-bezier(.65,0,.25,1); --dur:650ms;
+    --display:"Avenir Next","Futura","Century Gothic","Segoe UI",system-ui,sans-serif;
+    --body:system-ui,-apple-system,"Segoe UI","PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --page:#151412; --ink:#F1EEE8; --muted:#A59F95; --line:#34312C; --panel:#1E1C19; --focus:#F1EEE8; }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--page);color:var(--ink);font:15px/1.5 var(--body);-webkit-font-smoothing:antialiased}
+
+  /* ---------- 輪播 ---------- */
+  .stage{max-width:520px;margin:0 auto;padding:16px 8px 8px}
+  .track{
+    display:flex;gap:var(--gap);
+    height:min(78vh, calc(min(100vw,520px) * 1.62));
+    min-height:420px;
+    touch-action:pan-y; user-select:none; -webkit-user-select:none; outline:none;
+  }
+  .track:focus-visible{outline:2px solid var(--focus);outline-offset:4px;border-radius:var(--radius)}
+  .card{
+    position:relative;flex:0 0 auto;width:12px;height:100%;
+    border-radius:var(--radius);overflow:hidden;cursor:pointer;
+    transition:width var(--dur) var(--ease);
+    background:var(--bg);color:var(--fg);
+  }
+  .card.active{cursor:default}
+  /* inner 永遠等於「展開寬度」，細條只露出其中一段 */
+  .inner{position:absolute;top:0;bottom:0;width:var(--open-w,320px)}
+  .card.left .inner{right:0}
+  .card:not(.left) .inner{left:0}
+  .art{position:absolute;inset:0}
+  .art img{width:100%;height:100%;object-fit:cover;display:block}
+  .art svg{position:absolute;left:50%;bottom:16%;width:var(--art-w,88%);transform:translateX(-50%)}
+  .art::after{ /* 底部柔光，讓圖不浮在色塊上 */
+    content:"";position:absolute;inset:auto 0 0 0;height:30%;
+    background:linear-gradient(to top, rgba(0,0,0,.10), transparent);
+  }
+  .copy{position:absolute;top:9%;left:8%;right:8%;text-align:var(--align,center)}
+  .copy h2{
+    margin:0;font:600 clamp(24px,7.4vw,34px)/1.05 var(--display);
+    letter-spacing:.06em;text-transform:uppercase;color:var(--title,var(--fg));
+  }
+  .copy p{margin:.55em 0 0;font:600 clamp(11px,3.1vw,13px)/1.45 var(--display);letter-spacing:.12em;text-transform:uppercase}
+  .card .copy{opacity:.9}
+  .card.active .copy{animation:rise .55s .28s both var(--ease)}
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  /* ---------- 控制列 ---------- */
+  .controls{display:flex;align-items:center;justify-content:center;gap:14px;padding:14px 0 4px}
+  .ring{width:56px;height:56px;border-radius:50%;border:0;padding:0;background:transparent;cursor:pointer;position:relative;color:var(--ink)}
+  .ring > svg{width:100%;height:100%;transform:rotate(-90deg)}
+  .ring .icon{position:absolute;inset:0;display:grid;place-items:center}
+  .ring:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+  .count{font:600 13px/1 var(--display);letter-spacing:.1em;color:var(--muted);min-width:44px;text-align:center}
+  .nav{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;font-size:16px}
+  .nav:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+  /* ---------- 編輯面板 ---------- */
+  .editor{max-width:720px;margin:20px auto 48px;padding:0 16px}
+  .editor details{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:4px 16px 16px}
+  .editor summary{cursor:pointer;font-weight:600;padding:12px 0}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 14px}
+  .btn{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:10px;padding:8px 12px;font:inherit;cursor:pointer}
+  .btn.primary{background:var(--ink);color:var(--page);border-color:var(--ink)}
+  .btn:focus-visible,.field input:focus-visible,.field select:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+  .row{border-top:1px solid var(--line);padding:14px 0}
+  .row-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:600}
+  .row-head .actions{display:flex;gap:6px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+  .field{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+  .field input,.field select{font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:8px;padding:7px 9px;min-width:0}
+  .field .pair{display:flex;gap:6px}
+  .field .pair input[type=color]{width:40px;padding:2px;flex:0 0 auto}
+  .err{color:var(--danger);font-size:13px;margin-top:6px}
+  .hint{color:var(--muted);font-size:13px;margin:0 0 10px}
+  .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--page);padding:10px 14px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s}
+  .toast.show{opacity:1}
+
+  @media (prefers-reduced-motion: reduce){
+    .card{transition:none}
+    .card.active .copy{animation:none}
+  }
+</style>
+</head>
+<body>
+
+<section class="stage" aria-roledescription="carousel" aria-label="座椅系列">
+  <div class="track" id="track" tabindex="0" aria-live="polite"></div>
+  <div class="controls">
+    <button class="nav" id="prev" type="button" aria-label="上一張">‹</button>
+    <button class="ring" id="ring" type="button" aria-label="暫停自動播放">
+      <svg viewBox="0 0 56 56" aria-hidden="true">
+        <circle cx="28" cy="28" r="24" fill="none" stroke="var(--line)" stroke-width="4"/>
+        <circle id="ringProgress" cx="28" cy="28" r="24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="150.8"/>
+      </svg>
+      <span class="icon" id="ringIcon" aria-hidden="true"></span>
+    </button>
+    <button class="nav" id="next" type="button" aria-label="下一張">›</button>
+  </div>
+  <div class="count" id="count" style="margin:0 auto"></div>
+</section>
+
+<section class="editor">
+  <details open>
+    <summary>編輯內容（即時預覽）</summary>
+    <p class="hint">改文字、顏色或填入圖片網址，上方立即更新。內容會暫存在這台瀏覽器；要帶走請用「匯出 HTML」。</p>
+    <div class="toolbar">
+      <button class="btn primary" id="exportHtml" type="button">匯出 HTML</button>
+      <button class="btn" id="exportJson" type="button">匯出 JSON</button>
+      <label class="btn" for="importJson">匯入 JSON</label>
+      <input id="importJson" type="file" accept="application/json,.json" hidden>
+      <button class="btn" id="addCard" type="button">新增卡片</button>
+      <button class="btn" id="reset" type="button">還原預設</button>
+      <label class="field" style="flex-direction:row;align-items:center;gap:6px">
+        自動播放秒數 <input id="interval" type="number" min="2" max="20" step="0.5" style="width:70px">
+      </label>
+    </div>
+    <div id="rows"></div>
+  </details>
+</section>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script type="application/json" id="seed">
+{
+  "interval": 4,
+  "cards": [
+    {"title":"Single Seat","sub":"Your own quiet corner","bg":"#E9DFCF","fg":"#5B4A36","sofa":"#C2643C","art":"single","align":"center","image":""},
+    {"title":"Double Seat","sub":"Made for two","bg":"#DCE3DA","fg":"#2F4A3A","sofa":"#5E7A5F","art":"double","align":"center","image":""},
+    {"title":"Triple Seat","sub":"Room for the whole family","bg":"#243038","fg":"#E7DCC6","sofa":"#B89A6A","art":"triple","align":"center","image":""},
+    {"title":"Ottoman","sub":"Put your feet up","bg":"#C9B8AE","fg":"#3E2F2A","sofa":"#6E5A52","art":"ottoman","align":"right","image":""}
+  ]
+}
+</script>
+
+<script>
+(() => {
+  "use strict";
+  const STORE_KEY = "seat-carousel-v1";
+  const ART_TYPES = ["single","double","triple","ottoman","none"];
+  const $ = (id) => document.getElementById(id);
+  const track = $("track"), rows = $("rows"), countEl = $("count");
+  const ring = $("ring"), ringProgress = $("ringProgress"), ringIcon = $("ringIcon");
+  const RING_LEN = 2 * Math.PI * 24;
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const seed = JSON.parse($("seed").textContent);
+  let state = loadState() || structuredClone(seed);
+  let active = 0, playing = !reduceMotion, elapsed = 0, lastTs = 0, justSwiped = false;
+
+  /* ---------- 儲存（失敗時不影響功能） ---------- */
+  function loadState(){
+    try { const raw = localStorage.getItem(STORE_KEY); if(!raw) return null; const s = JSON.parse(raw); return validate(s) ? s : null; }
+    catch(e){ console.warn("[carousel] 讀取暫存失敗", e); return null; }
+  }
+  function saveState(){ try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e){ /* 私密模式等，忽略 */ } }
+
+  function isHex(v){ return /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(String(v||"").trim()); }
+  function validate(s){
+    return s && Array.isArray(s.cards) && s.cards.length > 0 &&
+      s.cards.every(c => typeof c.title === "string" && isHex(c.bg) && isHex(c.fg));
+  }
+
+  /* ---------- 手繪沙發（佔位插圖，向量） ---------- */
+  function sofaSVG(type, color){
+    if(type === "none") return "";
+    const seats = {single:1,double:2,triple:3}[type];
+    const dark = "rgba(0,0,0,.18)";
+    if(type === "ottoman"){
+      return `<svg viewBox="0 0 300 140" role="img" aria-label="ottoman" style="--art-w:80%">
+        <rect x="70" y="40" width="160" height="70" rx="18" fill="${color}"/>
+        <rect x="70" y="40" width="160" height="22" rx="11" fill="${dark}"/>
+        <rect x="86" y="110" width="10" height="16" rx="3" fill="${dark}"/>
+        <rect x="204" y="110" width="10" height="16" rx="3" fill="${dark}"/>
+        <ellipse cx="150" cy="132" rx="110" ry="6" fill="rgba(0,0,0,.12)"/></svg>`;
+    }
+    // 依座位數決定整體寬度，單人座才會像單人椅而不是拉長的沙發
+    const W = {1:150, 2:230, 3:300}[seats], armW = 26, pad = 14, seatW = (W - 2*pad - 2*armW) / seats;
+    const artW = {1:"46%", 2:"70%", 3:"88%"}[seats];
+    let cushions = "";
+    for(let i=0;i<seats;i++){
+      const x = pad + armW + i*seatW;
+      cushions += `<rect x="${x+3}" y="34" width="${seatW-6}" height="52" rx="14" fill="${color}" stroke="${dark}" stroke-width="2"/>
+                   <rect x="${x+3}" y="84" width="${seatW-6}" height="30" rx="10" fill="${color}" stroke="${dark}" stroke-width="2"/>`;
+    }
+    return `<svg viewBox="0 0 ${W} 150" role="img" aria-label="${type} sofa" style="--art-w:${artW}">
+      <rect x="${pad}" y="60" width="${W-2*pad}" height="66" rx="16" fill="${color}"/>
+      ${cushions}
+      <rect x="${pad}" y="52" width="${armW}" height="74" rx="13" fill="${color}" stroke="${dark}" stroke-width="2"/>
+      <rect x="${W-pad-armW}" y="52" width="${armW}" height="74" rx="13" fill="${color}" stroke="${dark}" stroke-width="2"/>
+      <rect x="${pad+10}" y="126" width="9" height="12" rx="2" fill="${dark}"/>
+      <rect x="${W-pad-19}" y="126" width="9" height="12" rx="2" fill="${dark}"/>
+      <ellipse cx="${W/2}" cy="144" rx="${W/2-10}" ry="5" fill="rgba(0,0,0,.12)"/></svg>`;
+  }
+
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+  /* ---------- 輪播渲染 ---------- */
+  function renderTrack(){
+    track.innerHTML = "";
+    state.cards.forEach((c, i) => {
+      const el = document.createElement("article");
+      el.className = "card";
+      el.dataset.index = i;
+      el.setAttribute("aria-roledescription","slide");
+      el.setAttribute("aria-label", `${i+1} / ${state.cards.length}：${c.title}`);
+      el.style.setProperty("--bg", c.bg);
+      el.style.setProperty("--fg", c.fg);
+      el.style.setProperty("--align", c.align === "right" ? "right" : c.align === "left" ? "left" : "center");
+      const art = c.image
+        ? `<img src="${esc(c.image)}" alt="${esc(c.title)}" draggable="false">`
+        : sofaSVG(c.art, c.sofa || c.fg);
+      el.innerHTML = `<div class="inner"><div class="art">${art}</div>
+        <div class="copy"><h2>${esc(c.title)}</h2>${c.sub ? `<p>${esc(c.sub)}</p>` : ""}</div></div>`;
+      const img = el.querySelector("img");
+      if(img) img.addEventListener("error", () => showRowError(i, "圖片載入失敗，請確認網址可公開存取（https）。已改用插圖。"), {once:true});
+      el.addEventListener("click", () => {
+        if(justSwiped){ justSwiped = false; return; } // 滑動後瀏覽器仍會送出 click，忽略它
+        if(i !== active){ go(i); }
+      });
+      track.appendChild(el);
+    });
+    layout();
+  }
+
+  function layout(){
+    const cards = [...track.children];
+    const n = cards.length; if(!n) return;
+    const W = track.clientWidth, gap = parseFloat(getComputedStyle(track).gap) || 6;
+    const sliverFor = (d) => d === 1 ? 22 : 12;
+    let rest = 0;
+    cards.forEach((_, i) => { if(i !== active) rest += sliverFor(Math.abs(i - active)); });
+    const openW = Math.max(160, W - rest - gap*(n-1));
+    track.style.setProperty("--open-w", openW + "px");
+    cards.forEach((el, i) => {
+      const d = Math.abs(i - active);
+      el.style.width = (i === active ? openW : sliverFor(d)) + "px";
+      el.classList.toggle("active", i === active);
+      el.classList.toggle("left", i < active);
+      el.setAttribute("aria-hidden", i === active ? "false" : "true");
+      el.querySelector(".inner").style.width = openW + "px";
+    });
+    countEl.textContent = `${String(active+1).padStart(2,"0")} / ${String(n).padStart(2,"0")}`;
+  }
+
+  function go(i){
+    const n = state.cards.length;
+    active = ((i % n) + n) % n;
+    elapsed = 0;
+    // 重新觸發文字進場動畫
+    const el = track.children[active];
+    if(el){ const copy = el.querySelector(".copy"); copy.style.animation = "none"; void copy.offsetWidth; copy.style.animation = ""; }
+    layout();
+  }
+
+  /* ---------- 自動播放 + 圓環進度 ---------- */
+  function setPlaying(p){
+    playing = p;
+    ringIcon.innerHTML = p
+      ? `<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="2" y="1" width="3.5" height="12" rx="1" fill="currentColor"/><rect x="8.5" y="1" width="3.5" height="12" rx="1" fill="currentColor"/></svg>`
+      : `<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5v11l9-5.5z" fill="currentColor"/></svg>`;
+    ring.setAttribute("aria-label", p ? "暫停自動播放" : "開始自動播放");
+  }
+  function tick(ts){
+    const dt = lastTs ? ts - lastTs : 0; lastTs = ts;
+    const total = Math.max(2, Number(state.interval) || 4) * 1000;
+    if(playing && !document.hidden){ elapsed += dt; if(elapsed >= total) go(active + 1); }
+    ringProgress.style.strokeDashoffset = RING_LEN * (1 - Math.min(1, elapsed / total));
+    requestAnimationFrame(tick);
+  }
+
+  /* ---------- 互動：滑動 / 鍵盤 / 按鈕 ---------- */
+  let startX = null, startY = null;
+  track.addEventListener("pointerdown", (e) => { startX = e.clientX; startY = e.clientY; justSwiped = false; });
+  track.addEventListener("pointerup", (e) => {
+    if(startX === null) return;
+    const dx = e.clientX - startX, dy = e.clientY - startY; startX = null;
+    if(Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)){
+      justSwiped = true;
+      setTimeout(() => { justSwiped = false; }, 400);
+      go(active + (dx < 0 ? 1 : -1));
+    }
+  });
+  track.addEventListener("pointercancel", () => { startX = null; });
+  track.addEventListener("keydown", (e) => {
+    if(e.key === "ArrowRight"){ e.preventDefault(); go(active + 1); }
+    if(e.key === "ArrowLeft"){ e.preventDefault(); go(active - 1); }
+  });
+  $("prev").addEventListener("click", () => go(active - 1));
+  $("next").addEventListener("click", () => go(active + 1));
+  ring.addEventListener("click", () => setPlaying(!playing));
+  new ResizeObserver(() => layout()).observe(track);
+
+  /* ---------- 編輯面板 ---------- */
+  function field(label, html){ return `<label class="field">${label}${html}</label>`; }
+  function colorField(label, key, val, i){
+    return field(label, `<span class="pair"><input type="color" data-i="${i}" data-k="${key}" value="${esc(toHex6(val))}">
+      <input type="text" data-i="${i}" data-k="${key}" value="${esc(val)}" maxlength="7" spellcheck="false"></span>`);
+  }
+  function toHex6(v){ v = String(v||"").trim(); if(/^#[0-9a-f]{3}$/i.test(v)) return "#" + [...v.slice(1)].map(c=>c+c).join(""); return isHex(v) ? v : "#000000"; }
+
+  function renderRows(){
+    $("interval").value = state.interval;
+    rows.innerHTML = state.cards.map((c, i) => `
+      <div class="row" data-row="${i}">
+        <div class="row-head"><span>卡片 ${i+1}</span>
+          <span class="actions">
+            <button class="btn" type="button" data-move="-1" data-i="${i}" aria-label="上移" ${i===0?"disabled":""}>↑</button>
+            <button class="btn" type="button" data-move="1" data-i="${i}" aria-label="下移" ${i===state.cards.length-1?"disabled":""}>↓</button>
+            <button class="btn" type="button" data-del="${i}" aria-label="刪除" ${state.cards.length<=1?"disabled":""}>刪除</button>
+          </span></div>
+        <div class="grid">
+          ${field("標題", `<input type="text" data-i="${i}" data-k="title" value="${esc(c.title)}" maxlength="40">`)}
+          ${field("副標", `<input type="text" data-i="${i}" data-k="sub" value="${esc(c.sub)}" maxlength="60">`)}
+          ${colorField("背景色", "bg", c.bg, i)}
+          ${colorField("文字色", "fg", c.fg, i)}
+          ${colorField("沙發色", "sofa", c.sofa || c.fg, i)}
+          ${field("插圖", `<select data-i="${i}" data-k="art">${ART_TYPES.map(t=>`<option ${t===c.art?"selected":""}>${t}</option>`).join("")}</select>`)}
+          ${field("文字對齊", `<select data-i="${i}" data-k="align">${["center","left","right"].map(t=>`<option ${t===c.align?"selected":""}>${t}</option>`).join("")}</select>`)}
+          ${field("圖片網址（選填，取代插圖）", `<input type="url" data-i="${i}" data-k="image" value="${esc(c.image)}" placeholder="https://…">`)}
+        </div>
+        <div class="err" id="err-${i}" hidden></div>
+      </div>`).join("");
+  }
+  function showRowError(i, msg){ const el = $("err-" + i); if(el){ el.textContent = msg; el.hidden = !msg; } }
+
+  rows.addEventListener("input", (e) => {
+    const t = e.target, i = Number(t.dataset.i), k = t.dataset.k;
+    if(!k || Number.isNaN(i)) return;
+    let v = t.value;
+    if(["bg","fg","sofa"].includes(k)){
+      if(!isHex(v)){ showRowError(i, `「${v}」不是有效色碼，請用 #RRGGBB。`); return; }
+      v = toHex6(v);
+      t.closest(".pair").querySelectorAll("input").forEach(inp => { if(inp !== t) inp.value = v; });
+    }
+    if(k === "image" && v && !/^https?:\/\//i.test(v) && !/^data:image\//i.test(v)){
+      showRowError(i, "圖片網址需以 https:// 開頭。"); return;
+    }
+    showRowError(i, "");
+    state.cards[i][k] = v;
+    saveState(); renderTrack();
+  });
+  rows.addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if(!b) return;
+    if(b.dataset.del !== undefined){
+      const i = Number(b.dataset.del);
+      if(!confirm(`確定刪除卡片 ${i+1}「${state.cards[i].title}」？`)) return;
+      state.cards.splice(i, 1); active = Math.min(active, state.cards.length - 1);
+    } else if(b.dataset.move){
+      const i = Number(b.dataset.i), j = i + Number(b.dataset.move);
+      [state.cards[i], state.cards[j]] = [state.cards[j], state.cards[i]];
+    } else return;
+    saveState(); renderRows(); renderTrack();
+  });
+  $("interval").addEventListener("input", (e) => {
+    const v = Number(e.target.value); if(v >= 2 && v <= 20){ state.interval = v; saveState(); }
+  });
+  $("addCard").addEventListener("click", () => {
+    state.cards.push({title:"New Card",sub:"Subtitle",bg:"#E6E1D8",fg:"#2B2925",sofa:"#7A7064",art:"double",align:"center",image:""});
+    saveState(); renderRows(); renderTrack(); go(state.cards.length - 1); toast("已新增卡片");
+  });
+  $("reset").addEventListener("click", () => {
+    if(!confirm("還原成預設內容？目前的修改會被覆蓋。")) return;
+    state = structuredClone(seed); active = 0; saveState(); renderRows(); renderTrack(); toast("已還原預設");
+  });
+
+  /* ---------- 匯出 / 匯入 ---------- */
+  function download(name, text, type){
+    const url = URL.createObjectURL(new Blob([text], {type}));
+    const a = Object.assign(document.createElement("a"), {href:url, download:name});
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  $("exportJson").addEventListener("click", () => { download("seat-carousel.json", JSON.stringify(state, null, 2), "application/json"); toast("已下載 JSON"); });
+  $("exportHtml").addEventListener("click", () => {
+    try{
+      const html = "<!doctype html>\n" + document.documentElement.outerHTML;
+      const json = JSON.stringify(state, null, 2).replace(/</g, "\\u003c");
+      const out = html.replace(/(<script type="application\/json" id="seed">)[\s\S]*?(<\/script>)/, `$1\n${json}\n$2`)
+                      .replace(/<div class="track" id="track"([^>]*)>[\s\S]*?<\/div>\s*<div class="controls">/, '<div class="track" id="track"$1></div>\n  <div class="controls">');
+      download("seat-carousel.html", out, "text/html");
+      toast("已下載 HTML（內含目前內容）");
+    }catch(e){ console.error(e); toast("匯出失敗：" + e.message); }
+  });
+  $("importJson").addEventListener("change", async (e) => {
+    const f = e.target.files[0]; if(!f) return;
+    try{
+      const s = JSON.parse(await f.text());
+      if(!validate(s)) throw new Error("格式不符：需要 cards 陣列，每張要有 title、bg、fg（#RRGGBB）");
+      state = s; active = 0; saveState(); renderRows(); renderTrack(); toast("已匯入 " + s.cards.length + " 張卡片");
+    }catch(err){ toast("匯入失敗：" + err.message); }
+    e.target.value = "";
+  });
+
+  let toastTimer;
+  function toast(msg){ const t = $("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2200); }
+
+  /* ---------- 啟動 ---------- */
+  renderRows(); renderTrack(); setPlaying(playing); requestAnimationFrame(tick);
+  window.__carousel = { go, get active(){ return active; }, get state(){ return state; } }; // 供測試
+})();
+</script>
+</body>
+</html>
