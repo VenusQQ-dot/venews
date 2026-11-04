@@ -25,5 +25,7 @@ npx -y skills add ibelick/ui-skills --skill '*' $FLAGS
 npx -y skills add https://github.com/anthropics/skills --skill pdf $FLAGS
 npx -y skills add https://github.com/coreyhaines31/marketingskills --skill seo-audit $FLAGS
 npx -y skills add https://github.com/sanyuan0704/code-review-expert --skill code-review-expert $FLAGS
+# LinkedIn 資訊圖：29 個 AI 設計破綻檢查（已 vendored 於 .claude/skills/remove-ai-design-slop）
+npx -y skills add https://github.com/charlie947/remove-ai-design-slop --skill remove-ai-design-slop $FLAGS
 
 echo "全部安裝完成!Skills 位於 ./.claude/skills/"

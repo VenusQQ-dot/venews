@@ -1,0 +1,57 @@
+{
+  "file": "drafts/2026-11-04-ai-newsroom/v1.html",
+  "png": "/home/user/venews/linkedin-infographic/drafts/2026-11-04-ai-newsroom/v1.png",
+  "checkedAt": "2026-11-04T05:51:42.547Z",
+  "results": [
+    {
+      "id": "canvas",
+      "status": "PASS",
+      "detail": "scroll 1080x1350；超出畫布元素 0 個"
+    },
+    {
+      "id": "fonts",
+      "status": "PASS",
+      "detail": "非規範字體 0 處；字體已載入"
+    },
+    {
+      "id": "min-font",
+      "status": "PASS",
+      "detail": "最小字級 26px（下限 26px）"
+    },
+    {
+      "id": "colors",
+      "status": "PASS",
+      "detail": "全部 9 色票內"
+    },
+    {
+      "id": "accent",
+      "status": "PASS",
+      "detail": "強調色文字 1 處（上限 1）：\"1 篇\""
+    },
+    {
+      "id": "identity",
+      "status": "PASS",
+      "detail": "data-brand=\"identity\" 品牌識別區"
+    },
+    {
+      "id": "emoji",
+      "status": "PASS",
+      "detail": "無 emoji"
+    },
+    {
+      "id": "hans",
+      "status": "PASS",
+      "detail": "未發現常見簡體字"
+    },
+    {
+      "id": "bottom",
+      "status": "PASS",
+      "detail": "最後一行文字距畫布底 29px"
+    },
+    {
+      "id": "center",
+      "status": "INFO",
+      "detail": "置中文字 0 處"
+    }
+  ]
+}
