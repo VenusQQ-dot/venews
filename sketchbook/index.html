@@ -1,0 +1,1025 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>阿墨的十月速寫本</title>
+<meta name="description" content="台北插畫家阿墨 A-Mo 的十月墨水速寫本書架：2019–2026，一年一本，每本 31 天。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Serif+TC:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   色彩系統：只用 黑 / 米白 / 灰 + 植物綠 + 貓橘
+   ============================================================ */
+:root{
+  --ink:#1B1A18;
+  --ink-2:#34322E;
+  --paper:#F2EDE3;      /* 頁面米白 */
+  --paper-2:#FAF7F0;    /* 紙張米白（略亮） */
+  --gray:#8B8780;
+  --gray-2:#C9C3B7;
+  --gray-3:#5A5650;
+  --leaf:#6A8A55;
+  --leaf-d:#4D6A3C;
+  --cat:#DE8A3A;
+  --cat-d:#B9672A;
+  --cat-l:#F0B26E;
+
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --mono:"IBM Plex Mono","SFMono-Regular",Menlo,Consolas,"Noto Sans Mono CJK TC",monospace;
+
+  /* 開書尺寸：由 JS layout() 依視窗計算 */
+  --pw:480px; --ph:640px; --cx:50vw; --cy:50vh;
+  --u:calc(var(--ph) / 100);
+
+  --noise:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .09 0 0 0 0 .08 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper) var(--noise);color:var(--ink);
+  font-family:var(--serif);-webkit-font-smoothing:antialiased;
+}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+.mono{font-family:var(--mono)}
+
+/* ============================================================
+   第一屏：標題 / 書架 / 年份
+   ============================================================ */
+.screen{height:100vh;min-height:600px;display:grid;grid-template-rows:auto 1fr auto}
+.top{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  padding:clamp(20px,3.6vh,44px) clamp(24px,4.4vw,72px) 0;
+}
+.brand h1{
+  margin:0;font-weight:900;letter-spacing:.03em;line-height:1.05;
+  font-size:clamp(30px,3.5vw,60px);
+}
+.brand p{
+  margin:.7em 0 0;font-family:var(--mono);font-size:clamp(11px,.9vw,14px);
+  letter-spacing:.2em;color:var(--gray-3);
+}
+.nav{display:flex;align-items:center;gap:.9em;font-family:var(--mono);font-size:clamp(12px,.95vw,14px);padding-top:.6em}
+.nav a{color:var(--ink);text-decoration:none;position:relative;padding:2px 0}
+.nav a::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:1.5px;background:var(--ink);transform:scaleX(0);transform-origin:left;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.nav a:hover::after,.nav a.is-active::after{transform:scaleX(1)}
+.nav .sep{color:var(--gray-2)}
+
+.stage{container-type:size;display:grid;place-items:center;min-height:0;padding:0 2vw}
+.scene{position:relative;width:min(100cqw,100cqh * 1.875);aspect-ratio:1200/640}
+.scene-art{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.books{position:absolute;inset:0}
+
+/* 書背 */
+.book{position:absolute;display:block}
+.book .spine{
+  display:block;width:100%;height:100%;
+  transition:transform .42s cubic-bezier(.2,.8,.2,1),filter .42s;
+}
+.book .spine svg{display:block;width:100%;height:100%}
+.book:hover .spine,.book:focus-visible .spine,.book.is-hot .spine{transform:translateY(-7%);filter:drop-shadow(0 6px 5px rgba(27,26,24,.18))}
+.book:focus-visible{outline:none}
+.book:focus-visible .spine{outline:2px solid var(--ink);outline-offset:3px}
+.book.is-out .spine{visibility:hidden}
+.tag{
+  position:absolute;left:50%;bottom:calc(100% + 28px);
+  transform:translate(-50%,6px);opacity:0;pointer-events:none;white-space:nowrap;
+  background:var(--ink);color:var(--paper);font-family:var(--mono);font-weight:500;
+  font-size:clamp(11px,.85vw,13px);letter-spacing:.08em;padding:.45em .8em;border-radius:2px;
+  transition:opacity .25s,transform .35s cubic-bezier(.2,.8,.2,1);
+}
+.tag::after{content:"";position:absolute;left:50%;top:100%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--ink)}
+.book:hover .tag,.book:focus-visible .tag,.book.is-hot .tag{opacity:1;transform:translate(-50%,0)}
+.is-open .tag{opacity:0!important}
+
+/* 年份按鈕 */
+.years{
+  display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:8px;
+  padding:4px 16px clamp(18px,4vh,40px);font-family:var(--mono);
+}
+.years .lbl{font-size:11px;letter-spacing:.2em;color:var(--gray);margin-right:10px}
+.year-btn{
+  font-family:var(--mono);font-size:clamp(12px,.9vw,14px);letter-spacing:.06em;
+  padding:.42em .8em;border:1.5px solid var(--ink);border-radius:999px;
+  transition:background .2s,color .2s,transform .2s;
+}
+.year-btn:hover,.year-btn:focus-visible,.year-btn.is-hot{background:var(--ink);color:var(--paper);outline:none}
+.year-btn:active{transform:translateY(1px)}
+
+/* 書架裝飾動畫（節制） */
+#cat-breath{transform-box:fill-box;transform-origin:50% 100%;animation:breathe 4.4s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1,1)}45%{transform:scale(1.012,1.055)}}
+#cat-tail{transform-box:fill-box;transform-origin:60% 0;animation:tail 7s ease-in-out infinite}
+@keyframes tail{0%,100%{transform:rotate(0)}50%{transform:rotate(2.4deg)}}
+.zz{font-family:var(--mono);font-size:13px;fill:var(--gray);opacity:0;animation:zz 4.4s ease-out infinite}
+.zz:nth-child(2){animation-delay:1.45s;font-size:11px}
+.zz:nth-child(3){animation-delay:2.9s;font-size:9px}
+@keyframes zz{0%{opacity:0;transform:translate(0,0)}25%{opacity:.85}100%{opacity:0;transform:translate(10px,-26px)}}
+.vine{transform-box:fill-box;transform-origin:50% 0;animation:sway 8s ease-in-out infinite alternate}
+.vine:nth-of-type(2){animation-duration:9.5s;animation-delay:-3s}
+.vine:nth-of-type(3){animation-duration:7s;animation-delay:-5s}
+@keyframes sway{from{transform:rotate(-1.2deg)}to{transform:rotate(1.2deg)}}
+
+/* ============================================================
+   關於
+   ============================================================ */
+.about{
+  max-width:1120px;margin:0 auto;padding:clamp(64px,12vh,140px) clamp(24px,4.4vw,72px) 80px;
+  display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(32px,6vw,96px);
+  border-top:1.5px solid var(--ink);
+}
+.about h2{margin:0;font-size:clamp(28px,3vw,46px);font-weight:900;letter-spacing:.04em}
+.about .en{display:block;margin-top:.8em;font-family:var(--mono);font-size:12px;letter-spacing:.22em;color:var(--gray-3);font-weight:400}
+.about p{margin:0 0 1.1em;font-size:clamp(15px,1.15vw,18px);line-height:1.95;font-weight:500}
+.stats{display:flex;gap:clamp(20px,4vw,56px);margin-top:2em;padding-top:1.4em;border-top:1px dashed var(--gray-2)}
+.stat b{display:block;font-family:var(--serif);font-weight:900;font-size:clamp(28px,2.6vw,40px);line-height:1}
+.stat span{display:block;margin-top:.6em;font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--gray-3)}
+.foot{text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--gray);padding:0 16px 40px}
+
+/* ============================================================
+   開書：遮罩 / 飛行中的立體書 / 跨頁
+   ============================================================ */
+.screen,.about,.foot{transition:opacity .8s ease}
+.is-open .screen,.is-open .about,.is-open .foot{opacity:.45}
+.backdrop{position:fixed;inset:0;z-index:20;background:rgba(24,22,20,.86);opacity:0;pointer-events:none;transition:opacity .8s ease}
+.is-open .backdrop{opacity:1;pointer-events:auto}
+
+.flight{position:fixed;inset:0;z-index:30;perspective:2200px;pointer-events:none;visibility:hidden}
+.flight.is-on{visibility:visible}
+.flyer{
+  position:absolute;left:0;top:0;width:var(--pw);height:var(--ph);
+  transform-style:preserve-3d;transform-origin:50% 50%;--t:12px;
+}
+body[data-state="cover"] .flyer{pointer-events:auto;cursor:pointer}
+.fx{position:absolute;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.fx-front{inset:0;transform:translateZ(calc(var(--t) / 2))}
+.fx-back{inset:0;transform:rotateY(180deg) translateZ(calc(var(--t) / 2))}
+.fx-spine,.fx-edge{top:0;height:100%;width:var(--t);left:calc((var(--pw) - var(--t)) / 2)}
+.fx-spine{transform:rotateY(-90deg) translateZ(calc(var(--pw) / 2))}
+.fx-spine svg{display:block;width:100%;height:100%}
+.fx-edge{transform:rotateY(90deg) translateZ(calc(var(--pw) / 2));background:repeating-linear-gradient(90deg,var(--paper-2) 0 2px,#DCD5C7 2px 3px)}
+.fx-top,.fx-bottom{left:0;width:100%;height:var(--t);top:calc((var(--ph) - var(--t)) / 2);background:repeating-linear-gradient(0deg,var(--paper-2) 0 2px,#DCD5C7 2px 3px)}
+.fx-top{transform:rotateX(90deg) translateZ(calc(var(--ph) / 2))}
+.fx-bottom{transform:rotateX(-90deg) translateZ(calc(var(--ph) / 2))}
+
+/* 封面 */
+.cover{position:absolute;inset:0;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.25) inset}
+.cover-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.cover-label{
+  position:absolute;left:13%;right:13%;top:7.5%;height:20%;
+  background:var(--paper-2) var(--noise);border:calc(var(--u) * .25) solid var(--ink);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u) * .5);
+  box-shadow:0 calc(var(--u) * .4) calc(var(--u) * 1) rgba(0,0,0,.18);
+}
+.cl-k,.cl-n{font-family:var(--mono);font-size:calc(var(--u) * 1.35);letter-spacing:.24em;color:var(--gray-3);white-space:nowrap}
+.cl-y{font-family:var(--serif);font-weight:900;font-size:calc(var(--u) * 8.4);line-height:1;letter-spacing:.04em}
+.cover-hinge{position:absolute;left:0;top:0;bottom:0;width:7%;background:linear-gradient(90deg,rgba(0,0,0,.32),rgba(0,0,0,0) 70%),linear-gradient(90deg,transparent 62%,rgba(255,255,255,.12) 64%,transparent 70%)}
+
+/* 封面狀態 UI */
+.cover-ui{
+  position:fixed;z-index:50;left:var(--cx);top:calc(var(--cy) + var(--ph) / 2 + clamp(14px,2.4vh,26px));
+  transform:translate(-50%,8px);display:flex;align-items:center;gap:14px;
+  opacity:0;pointer-events:none;transition:opacity .3s,transform .4s cubic-bezier(.2,.8,.2,1);
+  color:var(--paper);font-family:var(--mono);font-size:13px;letter-spacing:.08em;white-space:nowrap;
+}
+.cover-ui .hint{color:var(--gray-2)}
+body[data-state="cover"] .cover-ui{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
+
+.ui-btn{
+  font-family:var(--mono);font-size:13px;letter-spacing:.08em;color:var(--paper);
+  border:1.5px solid rgba(242,237,227,.7);border-radius:999px;padding:.5em 1.05em;
+  transition:background .2s,color .2s,opacity .2s;
+}
+.ui-btn:hover,.ui-btn:focus-visible{background:var(--paper);color:var(--ink);outline:none}
+.ui-btn:disabled{opacity:.28;pointer-events:none}
+.ui-btn.solid{background:var(--paper);color:var(--ink)}
+.ui-btn.solid:hover{background:var(--paper-2)}
+
+/* 跨頁 */
+.reader{position:fixed;inset:0;z-index:40;visibility:hidden;pointer-events:none;user-select:none;-webkit-user-select:none}
+.reader.is-on{visibility:visible}
+body[data-state="spread"] .reader{pointer-events:auto}
+.spread{
+  position:absolute;left:calc(var(--cx) - var(--pw));top:calc(var(--cy) - var(--ph) / 2);
+  width:calc(var(--pw) * 2);height:var(--ph);perspective:calc(var(--pw) * 5);cursor:pointer;
+}
+.sh{position:absolute;top:0;height:100%;width:50%;background:var(--paper-2);box-shadow:0 calc(var(--u) * 3) calc(var(--u) * 7) calc(var(--u) * -1) rgba(0,0,0,.6),0 2px 6px rgba(0,0,0,.35)}
+.sh-r{left:50%}
+.sh-l{left:0;opacity:0;transition:opacity .25s}
+.sh-l.is-on{opacity:1}
+.base{position:absolute;left:50%;top:0;width:var(--pw);height:var(--ph);z-index:1;overflow:hidden}
+.leaf,.seg-out{position:absolute;top:0;height:var(--ph);width:calc(var(--pw) / 2);transform-style:preserve-3d;transform-origin:0 50%}
+.leaf{left:50%}
+.seg-out{left:100%}
+.face{position:absolute;inset:0;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.face.back{transform:rotateY(180deg)}
+.pc{position:absolute;top:0;left:0;width:var(--pw);height:var(--ph)}
+.pc.off{left:calc(var(--pw) / -2)}
+.shade{position:absolute;inset:0;pointer-events:none;opacity:var(--sh,0)}
+.face.front .shade{background:linear-gradient(90deg,rgba(0,0,0,.42),rgba(0,0,0,.08))}
+.face.back .shade{background:linear-gradient(270deg,rgba(0,0,0,.34),rgba(0,0,0,.04))}
+
+/* 頁面內容 */
+.page{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  padding:calc(var(--u) * 6.5) calc(var(--u) * 6.2) calc(var(--u) * 4.4);
+  background-color:var(--paper-2);background-image:var(--noise);color:var(--ink);
+}
+.page.is-left{background-image:linear-gradient(270deg,rgba(0,0,0,.16),rgba(0,0,0,.04) 5%,transparent 11%),var(--noise)}
+.page.is-right{background-image:linear-gradient(90deg,rgba(0,0,0,.16),rgba(0,0,0,.04) 5%,transparent 11%),var(--noise)}
+.pg-head{display:flex;flex-direction:column;gap:calc(var(--u) * .8);padding-bottom:calc(var(--u) * 1.8);border-bottom:1px solid var(--gray-2)}
+.pg-day{font-family:var(--mono);font-size:calc(var(--u) * 1.5);letter-spacing:.28em;color:var(--gray-3)}
+.pg-title{font-weight:700;font-size:calc(var(--u) * 2.9);letter-spacing:.06em}
+.pg-fig{flex:1;min-height:0;margin:calc(var(--u) * 2.6) 0 calc(var(--u) * 1.6);display:flex;align-items:center;justify-content:center}
+.pg-fig img{max-width:100%;max-height:100%;object-fit:contain;mix-blend-mode:multiply;display:block}
+.pg-num{font-family:var(--mono);font-size:calc(var(--u) * 1.45);letter-spacing:.2em;color:var(--gray)}
+.is-left .pg-num{text-align:left}
+.is-right .pg-num{text-align:right}
+.page--title{align-items:center;justify-content:center;text-align:center}
+.tp-k{font-family:var(--mono);font-size:calc(var(--u) * 1.35);letter-spacing:.3em;color:var(--gray-3)}
+.tp-year{font-weight:900;font-size:calc(var(--u) * 11);line-height:1;margin:calc(var(--u) * 2.4) 0 calc(var(--u) * 1.6);letter-spacing:.03em}
+.tp-sym{width:calc(var(--u) * 3.2);height:calc(var(--u) * 3.2)}
+.tp-sym svg{width:100%;height:100%;display:block}
+.tp-name{margin-top:calc(var(--u) * 3);font-weight:700;font-size:calc(var(--u) * 2.6);letter-spacing:.2em}
+.tp-name .mono{font-weight:400;font-size:.62em;letter-spacing:.1em;color:var(--gray-3)}
+.tp-motto{margin:calc(var(--u) * 2.4) 0 0;font-size:calc(var(--u) * 2);line-height:1.8;font-weight:500;max-width:80%}
+.tp-meta{margin-top:calc(var(--u) * 4);font-family:var(--mono);font-size:calc(var(--u) * 1.25);letter-spacing:.2em;line-height:2;color:var(--gray)}
+.page--title .pg-num,.page--end .pg-num,.page--pending .pg-num,.page--blank .pg-num{position:absolute;bottom:calc(var(--u) * 4.4);left:calc(var(--u) * 6.2);right:calc(var(--u) * 6.2)}
+.page--end,.page--pending{align-items:center;justify-content:center;text-align:center}
+.end-k{font-family:var(--mono);font-size:calc(var(--u) * 1.4);letter-spacing:.28em;color:var(--gray-3)}
+.end-t{margin:calc(var(--u) * 2.2) 0;font-weight:700;font-size:calc(var(--u) * 3.2);line-height:1.55;letter-spacing:.06em}
+.end-s{font-family:var(--mono);font-size:calc(var(--u) * 1.25);letter-spacing:.2em;color:var(--gray)}
+.end-rule{width:calc(var(--u) * 6);height:1.5px;background:var(--ink);margin:calc(var(--u) * 2.6) auto 0}
+
+/* 跨頁 UI */
+.reader-ui{position:fixed;inset:0;z-index:50;pointer-events:none;opacity:0;transition:opacity .35s}
+body[data-state="spread"] .reader-ui{opacity:1}
+body[data-state="spread"] .reader-ui button{pointer-events:auto}
+.ru-back{position:absolute;left:clamp(16px,2.4vw,36px);top:clamp(14px,2.4vh,28px)}
+.ru-title{position:absolute;left:50%;top:clamp(20px,3vh,34px);transform:translateX(-50%);font-family:var(--mono);font-size:12px;letter-spacing:.24em;color:var(--gray-2);white-space:nowrap}
+.ru-pager{position:absolute;left:50%;bottom:clamp(14px,2.6vh,30px);transform:translateX(-50%);display:flex;align-items:center;gap:18px;white-space:nowrap}
+.ru-count{font-family:var(--mono);font-size:13px;letter-spacing:.14em;color:var(--paper);min-width:9.5em;text-align:center}
+.ru-count small{display:block;font-size:10px;letter-spacing:.22em;color:var(--gray);margin-top:3px}
+
+@media (max-width:760px){
+  .top{flex-direction:column;gap:14px}
+  .about{grid-template-columns:1fr}
+  .ru-title{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition-duration:.01ms!important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body data-state="shelf">
+
+<div class="screen" id="top">
+  <header class="top">
+    <div class="brand">
+      <h1>阿墨的十月速寫本</h1>
+      <p>31 天・一本速寫本・每年一本</p>
+    </div>
+    <nav class="nav" aria-label="主選單">
+      <a href="#top" class="is-active">速寫本</a><span class="sep">／</span><a href="#about">關於</a>
+    </nav>
+  </header>
+
+  <main class="stage">
+    <div class="scene" id="scene">
+      <!-- ===== 書架與擺設（SVG 扁平插畫） ===== -->
+      <svg class="scene-art" viewBox="0 0 1200 640" aria-hidden="true">
+        <defs>
+          <linearGradient id="g-shelf-shadow" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#1B1A18" stop-opacity=".16"/>
+            <stop offset="1" stop-color="#1B1A18" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="g-lamp" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#FFFCF5" stop-opacity=".95"/>
+            <stop offset="1" stop-color="#FFFCF5" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+
+        <!-- 上層書架 -->
+        <g id="shelf-upper">
+          <rect x="170" y="309" width="860" height="26" fill="url(#g-shelf-shadow)"/>
+          <rect x="170" y="300" width="860" height="9" fill="#1B1A18"/>
+          <path d="M234 309 V352 L270 309 M966 309 V352 L930 309" fill="none" stroke="#1B1A18" stroke-width="4" stroke-linejoin="round"/>
+        </g>
+        <!-- 下層書架 -->
+        <g id="shelf-lower">
+          <rect x="170" y="569" width="860" height="26" fill="url(#g-shelf-shadow)"/>
+          <rect x="170" y="560" width="860" height="9" fill="#1B1A18"/>
+          <path d="M234 569 V612 L270 569 M966 569 V612 L930 569" fill="none" stroke="#1B1A18" stroke-width="4" stroke-linejoin="round"/>
+        </g>
+
+        <!-- 檯燈的光 -->
+        <path d="M367 471 L398 446 L528 560 L372 560 Z" fill="url(#g-lamp)" opacity=".85"/>
+
+        <!-- 黑色檯燈 -->
+        <g id="lamp">
+          <path d="M232 560 C232 546 302 546 302 560 Z" fill="#1B1A18"/>
+          <path d="M267 552 L292 470 L350 428" fill="none" stroke="#1B1A18" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="267" cy="552" r="4.5" fill="#1B1A18"/>
+          <circle cx="292" cy="470" r="6" fill="#1B1A18"/>
+          <circle cx="292" cy="470" r="2" fill="#5A5650"/>
+          <path d="M342 421 L359 410 L399 446 L366 472 Z" fill="#1B1A18"/>
+          <circle cx="352" cy="425" r="5" fill="#1B1A18"/>
+          <ellipse cx="383" cy="460" rx="9" ry="5" transform="rotate(-39 383 460)" fill="#FAF7F0"/>
+        </g>
+
+        <!-- 十月月曆 -->
+        <g id="calendar">
+          <path d="M434 560 L448 446 L516 446 L530 560 Z" fill="#8B8780"/>
+          <rect x="422" y="454" width="120" height="106" fill="#FAF7F0" stroke="#1B1A18" stroke-width="2.5"/>
+          <rect x="422" y="454" width="120" height="24" fill="#1B1A18"/>
+          <text x="431" y="471" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="500" fill="#F2EDE3" letter-spacing="1">OCT</text>
+          <text x="533" y="470.5" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="#C9C3B7" text-anchor="end">2026</text>
+          <g id="cal-rings"></g>
+          <g id="cal-grid"></g>
+        </g>
+
+        <!-- 墨水瓶 -->
+        <g id="ink">
+          <ellipse cx="642" cy="559" rx="7" ry="1.8" fill="#1B1A18" opacity=".8"/>
+          <rect x="578" y="510" width="52" height="50" rx="10" fill="#1B1A18"/>
+          <rect x="592" y="498" width="24" height="16" fill="#1B1A18"/>
+          <rect x="589" y="484" width="30" height="17" rx="3" fill="#5A5650" stroke="#1B1A18" stroke-width="2"/>
+          <path d="M594 488 V497 M600 488 V497 M606 488 V497 M612 488 V497" stroke="#1B1A18" stroke-width="1" opacity=".55"/>
+          <rect x="587" y="523" width="34" height="27" fill="#FAF7F0"/>
+          <text x="604" y="543" font-family="Noto Serif TC, serif" font-size="17" font-weight="700" fill="#1B1A18" text-anchor="middle">墨</text>
+          <path d="M584 518 V548" stroke="#5A5650" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+        </g>
+
+        <!-- 平放的書 + 筆筒 -->
+        <g id="stack">
+          <rect x="690" y="540" width="146" height="20" fill="#8B8780" stroke="#1B1A18" stroke-width="2"/>
+          <path d="M700 546 H826 M700 554 H826" stroke="#1B1A18" stroke-width="1" opacity=".35"/>
+          <rect x="698" y="522" width="128" height="18" fill="#FAF7F0" stroke="#1B1A18" stroke-width="2"/>
+          <rect x="806" y="522" width="8" height="18" fill="#1B1A18"/>
+          <rect x="694" y="508" width="118" height="14" fill="#1B1A18"/>
+          <path d="M752 470 L738 418 M762 470 L766 408 M773 470 L792 424" stroke="#1B1A18" stroke-width="3.5" stroke-linecap="round"/>
+          <path d="M766 408 L767 398" stroke="#8B8780" stroke-width="3.5" stroke-linecap="round"/>
+          <ellipse cx="736" cy="412" rx="3.4" ry="8" transform="rotate(-15 736 412)" fill="#1B1A18"/>
+          <ellipse cx="795" cy="418" rx="3.4" ry="8" transform="rotate(22 795 418)" fill="#1B1A18"/>
+          <rect x="742" y="468" width="40" height="40" rx="3" fill="#FAF7F0" stroke="#1B1A18" stroke-width="2.5"/>
+          <rect x="742" y="482" width="40" height="6" fill="#C9C3B7"/>
+        </g>
+
+        <!-- 吊盆植物（盆在上層右端，藤蔓垂下兩層） -->
+        <g id="plant">
+          <path d="M946 252 H1016 L1008 300 H954 Z" fill="#8B8780" stroke="#1B1A18" stroke-width="2.5" stroke-linejoin="round"/>
+          <rect x="942" y="246" width="78" height="11" fill="#1B1A18"/>
+          <g id="plant-top">
+            <ellipse cx="960" cy="236" rx="15" ry="7" transform="rotate(-32 960 236)" fill="#6A8A55"/>
+            <ellipse cx="981" cy="228" rx="15" ry="7" transform="rotate(-80 981 228)" fill="#4D6A3C"/>
+            <ellipse cx="1001" cy="235" rx="15" ry="7" transform="rotate(30 1001 235)" fill="#6A8A55"/>
+            <ellipse cx="972" cy="240" rx="12" ry="6" transform="rotate(10 972 240)" fill="#4D6A3C"/>
+            <ellipse cx="1012" cy="242" rx="11" ry="5.5" transform="rotate(-10 1012 242)" fill="#4D6A3C"/>
+          </g>
+          <g class="vine"><path class="stem" d="M950 256 C930 292 942 342 922 392 C912 422 918 452 910 482" fill="none" stroke="#4D6A3C" stroke-width="2.2"/></g>
+          <g class="vine"><path class="stem" d="M1013 256 C1036 302 1020 362 1037 422 C1047 470 1030 530 1041 598" fill="none" stroke="#4D6A3C" stroke-width="2.2"/></g>
+          <g class="vine"><path class="stem" d="M980 260 C986 310 970 352 977 404 C981 430 975 446 979 466" fill="none" stroke="#4D6A3C" stroke-width="2.2"/></g>
+        </g>
+
+        <!-- 橘貓：趴在上層書架睡覺 -->
+        <g id="cat">
+          <g id="cat-tail">
+            <path d="M664 293 C642 296 634 306 636 330 C638 360 626 392 640 424" fill="none" stroke="#DE8A3A" stroke-width="12" stroke-linecap="round"/>
+            <path d="M636 402 C632 412 634 419 640 424" fill="none" stroke="#B9672A" stroke-width="12" stroke-linecap="round"/>
+            <path d="M632 346 l9 2 M630 370 l9 1" stroke="#B9672A" stroke-width="3" stroke-linecap="round"/>
+          </g>
+          <g id="cat-breath">
+            <path d="M650 300 C640 268 684 247 744 247 C804 247 842 264 846 300 Z" fill="#DE8A3A"/>
+            <path d="M702 251 q-5 10 1 20 M727 248 q-5 11 1 22 M752 248 q-4 11 2 22 M777 251 q-4 10 2 20" fill="none" stroke="#B9672A" stroke-width="4.5" stroke-linecap="round"/>
+            <path d="M664 300 C664 286 676 278 690 280" fill="none" stroke="#B9672A" stroke-width="3" stroke-linecap="round" opacity=".7"/>
+            <path d="M838 262 L839 236 L857 252 Z" fill="#DE8A3A"/>
+            <path d="M862 252 L881 238 L879 264 Z" fill="#DE8A3A"/>
+            <path d="M842 255 L842 244 L850 251 Z M868 251 L876 245 L876 257 Z" fill="#B9672A"/>
+            <circle cx="859" cy="276" r="24.5" fill="#DE8A3A"/>
+            <path d="M853 256 v6 M859 254 v7 M865 256 v6" stroke="#B9672A" stroke-width="2.6" stroke-linecap="round"/>
+            <ellipse cx="859" cy="290" rx="10" ry="6.5" fill="#FAF7F0"/>
+            <path d="M845 279 q4.5 3.6 9 0 M864 279 q4.5 3.6 9 0" fill="none" stroke="#1B1A18" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M856.5 286 h5 l-2.5 2.8 z" fill="#1B1A18"/>
+            <ellipse cx="845" cy="299" rx="10" ry="4.6" fill="#F0B26E"/>
+            <ellipse cx="871" cy="299" rx="10" ry="4.6" fill="#F0B26E"/>
+          </g>
+          <g transform="translate(890 246)"><text class="zz">z</text><text class="zz" x="9" y="-12">z</text><text class="zz" x="17" y="-22">z</text></g>
+        </g>
+      </svg>
+
+      <!-- ===== 書背（HTML 按鈕，內含 SVG） ===== -->
+      <div class="books" id="books" role="list" aria-label="速寫本書架"></div>
+    </div>
+  </main>
+
+  <div class="years" id="years" role="group" aria-label="選擇年份">
+    <span class="lbl">PICK A YEAR</span>
+  </div>
+</div>
+
+<section class="about" id="about" aria-labelledby="about-h">
+  <div>
+    <h2 id="about-h">關於阿墨<span class="en">ABOUT A-MO · TAIPEI</span></h2>
+  </div>
+  <div>
+    <p>阿墨是住在台北的插畫家（虛構人物）。每年十月一日起，他會拿出一本新的速寫本，每天用墨水畫一張，三十一天後闔上，收進書架。</p>
+    <p>八年下來，線條從粗硬的交叉排線，慢慢變成帶灰階的淡彩；畫的東西從巷口的鐵窗，變成家裡那隻小黑貓。書架上的橘貓不是他養的，是隔壁的，牠只是很喜歡在那裡睡覺。</p>
+    <p class="mono" style="font-size:13px;letter-spacing:.06em;color:var(--gray-3)">Ink on paper · one sketchbook every October · 2019 → 2026</p>
+    <div class="stats">
+      <div class="stat"><b>8</b><span>BOOKS 本</span></div>
+      <div class="stat"><b>248</b><span>DAYS 天（8 × 31）</span></div>
+      <div class="stat"><b>1</b><span>CAT 隻（借來的）</span></div>
+    </div>
+  </div>
+</section>
+<p class="foot">© A-MO SKETCHBOOK SHELF · 阿墨為虛構角色</p>
+
+<!-- ===== 開書層 ===== -->
+<div class="backdrop" id="backdrop"></div>
+<div class="flight" id="flight"><div class="flyer" id="flyer" role="button" aria-label="翻開這本速寫本"></div></div>
+
+<div class="cover-ui" id="cover-ui">
+  <button class="ui-btn" data-act="close">← 回書架</button>
+  <span class="hint">點封面翻開 · click to open</span>
+  <button class="ui-btn solid" data-act="open">翻開 →</button>
+</div>
+
+<div class="reader" id="reader" aria-hidden="true">
+  <div class="spread" id="spread"></div>
+</div>
+<div class="reader-ui" id="reader-ui">
+  <button class="ui-btn ru-back" data-act="close">← 回書架</button>
+  <div class="ru-title" id="ru-title"></div>
+  <div class="ru-pager">
+    <button class="ui-btn" data-act="prev" aria-label="上一頁">‹ 上一頁</button>
+    <div class="ru-count" id="ru-count" aria-live="polite"></div>
+    <button class="ui-btn" data-act="next" aria-label="下一頁">下一頁 ›</button>
+  </div>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+/* ============================================================
+   1. 資料（要改文案、標題、配色，只改這裡）
+   ============================================================ */
+const IMG_DIR = 'img/';
+const IMG_EXTS = ['jpg', 'png', 'webp', 'jpeg'];   // 依序嘗試副檔名
+
+const C = { ink:'#1B1A18', paper:'#F2EDE3', paper2:'#FAF7F0', gray:'#8B8780', gray2:'#C9C3B7', gray3:'#5A5650' };
+
+/* 書背：base 底色 / pattern 花紋 / pat 花紋色 / patch 標籤底（null=無）/ txt 文字色 / band 細線色 / symbol 幾何符號
+   pages：內頁標題（依序對應 d{year}_01, _02 …）。標題為暫定，請看圖後確認。 */
+const BOOKS = [
+  { year:2019, w:40, h:196, base:C.ink,   pattern:'solid',   pat:null,    patch:null,    txt:C.paper, band:C.paper, symbol:'dot',
+    motto:'第一本。線條很硬，像剛學會握筆的手。', style:'BOLD LINE · CROSS-HATCHING',
+    pages:['巷口的鐵窗','騎樓下的機車','屋頂水塔','老公寓樓梯間','夜市收攤','廟口石獅'] },
+  { year:2020, w:34, h:210, base:C.paper, pattern:'hstripe', pat:C.ink,   patch:C.paper, txt:C.ink,   band:C.ink,   symbol:'tri',
+    motto:'那年哪裡都去不了，就畫窗外。', style:'WINDOW STUDIES', pages:[] },
+  { year:2021, w:46, h:184, base:C.gray,  pattern:'solid',   pat:null,    patch:null,    txt:C.paper, band:C.paper, symbol:'square',
+    motto:'開始加一點灰，也開始學會留白。', style:'FIRST GREY WASH', pages:[] },
+  { year:2022, w:38, h:204, base:C.paper, pattern:'grid',    pat:C.gray,  patch:C.paper, txt:C.ink,   band:C.ink,   symbol:'diamond',
+    motto:'每天畫一個陌生人的背影。', style:'STRANGERS FROM BEHIND', pages:[] },
+  { year:2023, w:42, h:192, base:C.ink,   pattern:'pin',     pat:C.paper, patch:C.ink,   txt:C.paper, band:C.paper, symbol:'cross',
+    motto:'換了細筆，畫巷子裡的小東西。', style:'FINE LINER · ALLEY OBJECTS', pages:[] },
+  { year:2024, w:36, h:214, base:C.paper, pattern:'solid',   pat:null,    patch:null,    txt:C.ink,   band:C.ink,   symbol:'half',
+    motto:'試著一筆畫到底，不回頭修。', style:'ONE CONTINUOUS LINE', pages:[] },
+  { year:2025, w:48, h:200, base:C.gray,  pattern:'diag',    pat:C.gray3, patch:C.paper, txt:C.ink,   band:C.ink,   symbol:'ring',
+    motto:'小黑來了，整本都是牠。', style:'GREY INK WASH · A LITTLE BLACK CAT',
+    pages:['窗台上的小黑','打翻墨水的嫌疑犯','紙箱是我的','下雨天不出門','追毛線球','伸一個大懶腰'] },
+  { year:2026, w:40, h:188, base:C.ink,   pattern:'window',  pat:C.gray,  patch:C.paper, txt:C.ink,   band:C.paper, symbol:'bars',
+    motto:'第八本，還是十月，還是墨水。', style:'THE EIGHTH OCTOBER', pages:[] },
+];
+
+const SHELF = { vbW:1200, vbH:640, baseY:300, startX:236, gap:5 };
+
+/* ============================================================
+   2. 小工具
+   ============================================================ */
+const $ = (s, r = document) => r.querySelector(s);
+const reduceMQ = matchMedia('(prefers-reduced-motion: reduce)');
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const pad2 = n => String(n).padStart(2, '0');
+const easeInOutCubic = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+const easeInOutQuad = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+const wait = ms => new Promise(r => setTimeout(r, reduceMQ.matches ? 0 : ms));
+
+/* rAF tween：fn(eased, raw) 回傳 false 代表被取消 */
+function tween(dur, fn, ease = easeInOutCubic) {
+  return new Promise(resolve => {
+    if (reduceMQ.matches) dur = 0;
+    const t0 = performance.now();
+    const step = now => {
+      const p = dur <= 0 ? 1 : Math.min(1, (now - t0) / dur);
+      if (fn(ease(p), p) === false) return resolve(false);
+      if (p < 1) requestAnimationFrame(step); else resolve(true);
+    };
+    requestAnimationFrame(step);
+  });
+}
+function mulberry(seed) {
+  return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+}
+const svgURI = s => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s);
+
+/* ============================================================
+   3. SVG 產生器：符號 / 花紋 / 書背 / 備援封面與內頁
+   ============================================================ */
+function symbolSVG(kind, cx, cy, r, col) {
+  const sw = r * 0.34;
+  switch (kind) {
+    case 'dot':     return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${col}"/>`;
+    case 'ring':    return `<circle cx="${cx}" cy="${cy}" r="${r - sw / 2}" fill="none" stroke="${col}" stroke-width="${sw}"/>`;
+    case 'tri':     return `<path d="M${cx} ${cy - r} L${cx + r * .95} ${cy + r * .78} L${cx - r * .95} ${cy + r * .78}Z" fill="${col}"/>`;
+    case 'square': { const a = r * .84; return `<rect x="${cx - a + sw / 2}" y="${cy - a + sw / 2}" width="${2 * a - sw}" height="${2 * a - sw}" fill="none" stroke="${col}" stroke-width="${sw}"/>`; }
+    case 'diamond': return `<path d="M${cx} ${cy - r} L${cx + r} ${cy} L${cx} ${cy + r} L${cx - r} ${cy}Z" fill="${col}"/>`;
+    case 'cross': { const c = r * .78; return `<path d="M${cx - c} ${cy - c} L${cx + c} ${cy + c} M${cx + c} ${cy - c} L${cx - c} ${cy + c}" stroke="${col}" stroke-width="${sw}" stroke-linecap="round"/>`; }
+    case 'half':    return `<circle cx="${cx}" cy="${cy}" r="${r - sw / 3}" fill="none" stroke="${col}" stroke-width="${sw * .66}"/><path d="M${cx} ${cy - r} A${r} ${r} 0 0 1 ${cx} ${cy + r}Z" fill="${col}"/>`;
+    case 'bars': { const b = r * .95, g = r * .62; return `<path d="M${cx - b} ${cy - g} H${cx + b} M${cx - b} ${cy} H${cx + b} M${cx - b} ${cy + g} H${cx + b}" stroke="${col}" stroke-width="${sw * .8}" stroke-linecap="round"/>`; }
+  }
+  return '';
+}
+function patternDef(b, id, scale = 1) {
+  const sc = scale !== 1 ? ` scale(${scale})` : '';
+  const tf = sc ? ` patternTransform="${sc.trim()}"` : '';
+  const c = b.pat;
+  switch (b.pattern) {
+    case 'hstripe': return `<pattern id="${id}" width="10" height="10" patternUnits="userSpaceOnUse"${tf}><rect width="10" height="4.2" fill="${c}"/></pattern>`;
+    case 'grid':    return `<pattern id="${id}" width="12" height="12" patternUnits="userSpaceOnUse"${tf}><rect width="6" height="12" fill="${c}" opacity=".5"/><rect width="12" height="6" fill="${c}" opacity=".5"/></pattern>`;
+    case 'pin':     return `<pattern id="${id}" width="7" height="10" patternUnits="userSpaceOnUse"${tf}><rect x="3" width="1.1" height="10" fill="${c}" opacity=".6"/></pattern>`;
+    case 'diag':    return `<pattern id="${id}" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)${sc}"><rect width="3.6" height="9" fill="${c}"/></pattern>`;
+    case 'window':  return `<pattern id="${id}" width="15" height="15" patternUnits="userSpaceOnUse"${tf}><path d="M0 .75H15M.75 0V15" stroke="${c}" stroke-width="1.5"/></pattern>`;
+  }
+  return '';
+}
+
+let uid = 0;
+function spineSVG(b) {
+  const id = 'pt' + (++uid), { w, h } = b;
+  let s = `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">`;
+  if (b.pattern !== 'solid') s += `<defs>${patternDef(b, id)}</defs>`;
+  s += `<rect width="${w}" height="${h}" fill="${b.base}"/>`;
+  if (b.pattern !== 'solid') s += `<rect width="${w}" height="${h}" fill="url(#${id})"/>`;
+  // 上下細線
+  const bt = h * .052, bb = h * .948;
+  s += `<path d="M0 ${bt} H${w} M0 ${bt + 4} H${w} M0 ${bb} H${w} M0 ${bb - 4} H${w}" stroke="${b.band}" stroke-width="1.3"/>`;
+  // 標籤底
+  if (b.patch) {
+    s += `<rect x="${w * .16}" y="${h * .115}" width="${w * .68}" height="${w * .68}" fill="${b.patch}" stroke="${C.ink}" stroke-width=".8"/>`;
+    s += `<rect x="${w * .16}" y="${h * .3}" width="${w * .68}" height="${h * .4}" fill="${b.patch}" stroke="${C.ink}" stroke-width=".8"/>`;
+    s += `<rect x="${w * .16}" y="${h * .755}" width="${w * .68}" height="${w * .9}" fill="${b.patch}" stroke="${C.ink}" stroke-width=".8"/>`;
+  }
+  // 幾何符號
+  s += symbolSVG(b.symbol, w / 2, h * .115 + w * .34, w * .19, b.txt);
+  // 年份（直排）
+  s += `<text transform="translate(${w / 2} ${h * .5}) rotate(-90)" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono, monospace" font-weight="500" font-size="${w * .46}" letter-spacing="${w * .03}" fill="${b.txt}">${b.year}</text>`;
+  // 阿墨（直排兩字）
+  const fs = w * .27, y0 = h * .755 + w * .45 - fs * .55;
+  s += `<text x="${w / 2}" y="${y0}" text-anchor="middle" dominant-baseline="central" font-family="Noto Serif TC, serif" font-weight="700" font-size="${fs}" fill="${b.txt}">阿</text>`;
+  s += `<text x="${w / 2}" y="${y0 + fs * 1.1}" text-anchor="middle" dominant-baseline="central" font-family="Noto Serif TC, serif" font-weight="700" font-size="${fs}" fill="${b.txt}">墨</text>`;
+  s += `<rect x=".75" y=".75" width="${w - 1.5}" height="${h - 1.5}" fill="none" stroke="${C.ink}" stroke-width="1.5"/>`;
+  return s + '</svg>';
+}
+
+/* 備援封面：img/cover_YYYY 找不到時使用（上方 1/3 留白給年份標籤） */
+function coverFallback(b) {
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice">`;
+  if (b.pattern !== 'solid') s += `<defs>${patternDef(b, 'p', 2.4)}</defs>`;
+  s += `<rect width="300" height="400" fill="${b.base}"/>`;
+  if (b.pattern !== 'solid') s += `<rect width="300" height="400" fill="url(#p)"/>`;
+  if (b.patch) s += `<circle cx="150" cy="268" r="64" fill="${b.patch}" stroke="${C.ink}" stroke-width="2"/>`;
+  s += symbolSVG(b.symbol, 150, 268, 38, b.patch ? b.txt : b.band);
+  s += `<text x="150" y="376" text-anchor="middle" font-family="monospace" font-size="9" letter-spacing="3" fill="${b.patch ? C.ink : b.band}" opacity=".75">INK ON PAPER · 31 DAYS</text>`;
+  return svgURI(s + '</svg>');
+}
+
+/* 備援內頁：img/dYYYY_0N 找不到時使用的示意圖（會標示 PLACEHOLDER） */
+function dayFallback(year, n) {
+  const W = 600, H = 460, R = mulberry(year * 97 + n * 13);
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}">`;
+  if (year === 2019) {
+    s += `<defs><pattern id="h1" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="2.2" height="9" fill="${C.ink}"/></pattern>
+          <pattern id="h2" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><rect width="2.2" height="9" fill="${C.ink}"/></pattern></defs>`;
+    let x = 60;
+    while (x < 520) {
+      const bw = 60 + R() * 70, bh = 120 + R() * 200, y = 400 - bh;
+      s += `<rect x="${x}" y="${y}" width="${bw}" height="${bh}" fill="url(#h1)" stroke="${C.ink}" stroke-width="6"/>`;
+      if (R() > .4) s += `<rect x="${x}" y="${y}" width="${bw}" height="${bh * .45}" fill="url(#h2)"/>`;
+      for (let k = 0; k < 3; k++) s += `<rect x="${x + 12 + k * (bw - 24) / 3}" y="${y + 20}" width="${(bw - 36) / 3}" height="22" fill="${C.paper2}" stroke="${C.ink}" stroke-width="4"/>`;
+      x += bw + 6;
+    }
+    s += `<path d="M40 402 H560" stroke="${C.ink}" stroke-width="8" stroke-linecap="round"/>`;
+  } else {
+    for (let k = 0; k < 6; k++) s += `<ellipse cx="${80 + R() * 440}" cy="${80 + R() * 300}" rx="${50 + R() * 110}" ry="${30 + R() * 70}" fill="${C.gray}" opacity="${.1 + R() * .16}"/>`;
+    const cx = 220 + R() * 160, cy = 250 + R() * 60, f = R() > .5 ? 1 : -1;
+    s += `<g transform="translate(${cx} ${cy}) scale(${f} 1)" fill="${C.ink}">
+      <ellipse cx="0" cy="40" rx="62" ry="58"/><circle cx="-6" cy="-40" r="40"/>
+      <path d="M-40 -60 L-36 -98 L-12 -74Z M4 -76 L30 -98 L32 -58Z"/>
+      <path d="M50 80 C110 90 120 20 92 0" fill="none" stroke="${C.ink}" stroke-width="14" stroke-linecap="round"/></g>
+      <g transform="translate(${cx} ${cy}) scale(${f} 1)"><circle cx="-20" cy="-42" r="5" fill="${C.paper2}"/><circle cx="8" cy="-42" r="5" fill="${C.paper2}"/></g>`;
+  }
+  s += `<text x="${W - 16}" y="${H - 14}" text-anchor="end" font-family="monospace" font-size="13" letter-spacing="1.5" fill="${C.gray}">PLACEHOLDER · d${year}_${pad2(n)}</text>`;
+  return svgURI(s + '</svg>');
+}
+
+/* ============================================================
+   4. 圖片載入（自動嘗試副檔名，失敗則用備援圖）
+   ============================================================ */
+const srcCache = new Map();
+function resolveImg(base) {
+  if (!srcCache.has(base)) srcCache.set(base, new Promise(res => {
+    let i = 0;
+    const next = () => {
+      if (i >= IMG_EXTS.length) { console.warn(`[sketchbook] 找不到 ${IMG_DIR}${base}.(${IMG_EXTS.join('|')})，改用示意圖`); return res(null); }
+      const url = `${IMG_DIR}${base}.${IMG_EXTS[i++]}`, im = new Image();
+      im.onload = () => res(url); im.onerror = next; im.src = url;
+    };
+    next();
+  }));
+  return srcCache.get(base);
+}
+const fbCache = new Map();
+function fallbackFor(key) {
+  if (!fbCache.has(key)) {
+    const [kind, y, n] = key.split('|');
+    const b = BOOKS.find(x => x.year === +y);
+    fbCache.set(key, kind === 'cover' ? coverFallback(b) : dayFallback(+y, +n));
+  }
+  return fbCache.get(key);
+}
+function hydrate(root) {
+  root.querySelectorAll('img[data-img]').forEach(img => {
+    resolveImg(img.dataset.img).then(url => { img.src = url || fallbackFor(img.dataset.fb); });
+  });
+}
+
+/* ============================================================
+   5. 書架：裝飾（月曆格、藤蔓葉子）＋ 書背按鈕 ＋ 年份按鈕
+   ============================================================ */
+function buildDecor() {
+  // 月曆：2026/10/1 是星期四（週日起算 index 4）
+  const grid = $('#cal-grid'), rings = $('#cal-rings');
+  const x0 = 430, y0 = 494, cw = (120 - 16) / 7, ch = 12;
+  let g = '';
+  'SMTWTFS'.split('').forEach((d, i) => g += `<text x="${x0 + i * cw + cw / 2 - 1.6}" y="${y0 - 4}" font-family="IBM Plex Mono, monospace" font-size="6" fill="${C.gray}" text-anchor="middle">${d}</text>`);
+  for (let d = 1; d <= 31; d++) {
+    const idx = d + 3, c = idx % 7, r = Math.floor(idx / 7);
+    g += `<rect x="${x0 + c * cw}" y="${y0 + r * ch}" width="${cw - 3.6}" height="${ch - 3.6}" fill="${C.ink}" opacity="${d === 31 ? 1 : .82}"/>`;
+  }
+  grid.innerHTML = g;
+  rings.innerHTML = [440, 462, 502, 524].map(x => `<circle cx="${x}" cy="453" r="3.4" fill="${C.paper2}" stroke="${C.ink}" stroke-width="2"/>`).join('');
+
+  // 藤蔓葉子：沿路徑自動長
+  document.querySelectorAll('.vine .stem').forEach((p, vi) => {
+    const L = p.getTotalLength(), grp = p.parentNode, NS = 'http://www.w3.org/2000/svg';
+    let k = 0;
+    for (let d = 10; d < L - 2; d += 17 + (k % 3) * 2, k++) {
+      const a = p.getPointAtLength(d), b2 = p.getPointAtLength(Math.min(L, d + 1));
+      const ang = Math.atan2(b2.y - a.y, b2.x - a.x) * 180 / Math.PI;
+      const side = (k + vi) % 2 ? 1 : -1, sc = .8 + .45 * Math.sin(Math.PI * d / L);
+      const leaf = document.createElementNS(NS, 'path');
+      leaf.setAttribute('d', 'M0 0 C4 -8 14 -9 18 -1 C13 5 5 5 0 0Z');
+      leaf.setAttribute('fill', (k + vi) % 3 ? '#6A8A55' : '#4D6A3C');
+      leaf.setAttribute('transform', `translate(${a.x.toFixed(1)} ${a.y.toFixed(1)}) rotate(${(ang + side * 58).toFixed(1)}) scale(${sc.toFixed(2)})`);
+      grp.appendChild(leaf);
+    }
+  });
+}
+
+const bookEls = [];
+const yearBtns = [];
+function buildShelf() {
+  const books = $('#books'), years = $('#years');
+  const pct = (v, t) => (v / t * 100).toFixed(4) + '%';
+  let x = SHELF.startX;
+  BOOKS.forEach((b, i) => {
+    const el = document.createElement('button');
+    el.className = 'book';
+    el.setAttribute('role', 'listitem');
+    el.setAttribute('aria-label', `翻開 ${b.year} 年的速寫本`);
+    Object.assign(el.style, {
+      left: pct(x, SHELF.vbW), top: pct(SHELF.baseY - b.h, SHELF.vbH),
+      width: pct(b.w, SHELF.vbW), height: pct(b.h, SHELF.vbH),
+    });
+    el.innerHTML = `<span class="spine">${spineSVG(b)}</span><span class="tag">翻開 ${b.year}</span>`;
+    el.addEventListener('click', () => openBook(i));
+    books.appendChild(el);
+    bookEls.push(el);
+    x += b.w + SHELF.gap;
+  });
+  [...BOOKS.keys()].reverse().forEach(i => {
+    const btn = document.createElement('button');
+    btn.className = 'year-btn';
+    btn.textContent = BOOKS[i].year;
+    btn.setAttribute('aria-label', `翻開 ${BOOKS[i].year} 年的速寫本`);
+    const hot = on => { bookEls[i].classList.toggle('is-hot', on); };
+    btn.addEventListener('mouseenter', () => hot(true));
+    btn.addEventListener('mouseleave', () => hot(false));
+    btn.addEventListener('focus', () => hot(true));
+    btn.addEventListener('blur', () => hot(false));
+    btn.addEventListener('click', () => { hot(false); openBook(i); });
+    years.appendChild(btn);
+    yearBtns[i] = btn;
+  });
+  // 書背 hover 時，對應年份按鈕也亮起
+  bookEls.forEach((el, i) => {
+    el.addEventListener('mouseenter', () => yearBtns[i].classList.add('is-hot'));
+    el.addEventListener('mouseleave', () => yearBtns[i].classList.remove('is-hot'));
+  });
+}
+
+/* ============================================================
+   6. 封面與內頁 HTML
+   ============================================================ */
+function coverHTML(b) {
+  return `<div class="cover" style="background:${b.base}">
+    <img class="cover-art" alt="" data-img="cover_${b.year}" data-fb="cover|${b.year}">
+    <div class="cover-label"><span class="cl-k">OCTOBER SKETCHBOOK</span><span class="cl-y">${b.year}</span><span class="cl-n">阿墨 A-MO · 31 DAYS</span></div>
+    <i class="cover-hinge"></i></div>`;
+}
+function pagesFor(b) {
+  const P = [{ type:'title' }];
+  if (b.pages.length) {
+    b.pages.forEach((t, i) => P.push({ type:'day', n:i + 1, title:t }));
+    P.push({ type:'end' });
+  } else P.push({ type:'pending' });
+  if (P.length % 2) P.push({ type:'blank' });
+  return P;
+}
+function pageHTML(p, idx, b) {
+  const side = idx % 2 ? 'is-right' : 'is-left', num = `<div class="pg-num">${pad2(idx + 1)}</div>`;
+  switch (p.type) {
+    case 'title':
+      return `<div class="page page--title ${side}">
+        <div class="tp-k">A-MO · OCTOBER SKETCHBOOK</div>
+        <div class="tp-year">${b.year}</div>
+        <div class="tp-sym"><svg viewBox="0 0 20 20">${symbolSVG(b.symbol, 10, 10, 8, C.ink)}</svg></div>
+        <div class="tp-name">阿墨 <span class="mono">A-Mo</span></div>
+        <p class="tp-motto">「${b.motto}」</p>
+        <div class="tp-meta">10.01 — 10.31 · TAIPEI<br>${b.style}</div>${num}</div>`;
+    case 'day': {
+      const code = `d${b.year}_${pad2(p.n)}`;
+      return `<div class="page page--day ${side}">
+        <header class="pg-head"><span class="pg-day">DAY ${pad2(p.n)}</span><span class="pg-title">${p.title}</span></header>
+        <figure class="pg-fig"><img alt="DAY ${pad2(p.n)}：${p.title}" data-img="${code}" data-fb="day|${b.year}|${p.n}"></figure>${num}</div>`;
+    }
+    case 'end': {
+      const n = b.pages.length;
+      return `<div class="page page--end ${side}">
+        <div class="end-k">DAY ${pad2(n + 1)} — DAY 31</div>
+        <p class="end-t">其餘 ${31 - n} 天，<br>留在紙本裡。</p>
+        <div class="end-s">${n} / 31 PAGES SHOWN</div><div class="end-rule"></div>${num}</div>`;
+    }
+    case 'pending':
+      return `<div class="page page--pending ${side}">
+        <div class="end-k">DAY 01 — DAY 31</div>
+        <p class="end-t">這一本<br>還在掃描中。</p>
+        <div class="end-s">SCANNING · COMING SOON</div><div class="end-rule"></div>${num}</div>`;
+    default:
+      return `<div class="page page--blank ${side}">${num}</div>`;
+  }
+}
+
+/* ============================================================
+   7. 開書狀態機：shelf → cover → spread → shelf
+   ============================================================ */
+const flight = $('#flight'), flyer = $('#flyer'), reader = $('#reader'), spread = $('#spread');
+const G = { W:480, H:640, cx:0, cy:0, T1:12 };     // 版面幾何
+let F = { x:0, y:0, z:0, ry:90, s:1, t:12 };       // 飛行中書本的狀態
+let state = 'shelf', cur = -1;
+const R = { leaves:[], flipped:0, total:0, pages:[], shL:null };
+let zTop = 300;
+
+function setState(s) { state = s; document.body.dataset.state = s; }
+
+function layout() {
+  const vw = document.documentElement.clientWidth, vh = document.documentElement.clientHeight;
+  const ratio = .75;                                         // 單頁寬高比
+  const H = Math.round(Math.min(vh * .74, vw * .9 / (2 * ratio)));
+  const W = Math.round(H * ratio);
+  Object.assign(G, { W, H, cx: Math.round(vw / 2), cy: Math.round(vh / 2), T1: Math.max(8, Math.round(H * .026)) });
+  const rs = document.documentElement.style;
+  rs.setProperty('--pw', W + 'px'); rs.setProperty('--ph', H + 'px');
+  rs.setProperty('--cx', G.cx + 'px'); rs.setProperty('--cy', G.cy + 'px');
+}
+
+function applyFlyer() {
+  const rad = F.ry * Math.PI / 180;
+  // 讓「正對觀眾的那一面」維持在 z=0，避免透視造成起點/終點位置跳動
+  const zc = -F.s * (G.W / 2 * Math.abs(Math.sin(rad)) + F.t / 2 * Math.abs(Math.cos(rad)));
+  flyer.style.setProperty('--t', F.t.toFixed(2) + 'px');
+  flyer.style.transform = `translate3d(${(F.x - G.W / 2).toFixed(2)}px, ${(F.y - G.H / 2).toFixed(2)}px, ${(F.z + zc).toFixed(2)}px) rotateY(${F.ry.toFixed(2)}deg) scale3d(${F.s},${F.s},${F.s})`;
+}
+
+function buildFlyer(b) {
+  flyer.innerHTML = `
+    <div class="fx fx-front">${coverHTML(b)}</div>
+    <div class="fx fx-back" style="background:${b.base}"></div>
+    <div class="fx fx-spine">${spineSVG(b)}</div>
+    <div class="fx fx-edge"></div><div class="fx fx-top"></div><div class="fx fx-bottom"></div>`;
+  hydrate(flyer);
+}
+
+/* 一張紙 = 內半段 + 外半段（外半段多轉一點，做出紙張彎曲感） */
+function makeLeaf(frontHTML, backHTML) {
+  const el = document.createElement('div');
+  el.className = 'leaf';
+  el.innerHTML = `
+    <div class="face front"><div class="pc">${frontHTML}</div><i class="shade"></i></div>
+    <div class="face back"><div class="pc off">${backHTML}</div><i class="shade"></i></div>
+    <div class="seg-out">
+      <div class="face front"><div class="pc off">${frontHTML}</div><i class="shade"></i></div>
+      <div class="face back"><div class="pc">${backHTML}</div><i class="shade"></i></div>
+    </div>`;
+  return { el, out: el.querySelector('.seg-out'), a: 0, token: 0 };
+}
+
+function buildReader(b) {
+  const P = pagesFor(b);
+  const L = Math.floor((P.length - 1) / 2);
+  spread.innerHTML = `<div class="sh sh-r"></div><div class="sh sh-l"></div><div class="base"><div class="pc">${pageHTML(P[2 * L + 1] || { type:'blank' }, 2 * L + 1, b)}</div></div>`;
+  R.shL = spread.querySelector('.sh-l');
+  R.leaves = [makeLeaf(coverHTML(b), pageHTML(P[0], 0, b))];
+  for (let k = 1; k <= L; k++) R.leaves.push(makeLeaf(pageHTML(P[2 * k - 1], 2 * k - 1, b), pageHTML(P[2 * k], 2 * k, b)));
+  R.leaves.forEach((lf, i) => { lf.el.style.zIndex = 100 - i; spread.appendChild(lf.el); });
+  R.total = R.leaves.length; R.flipped = 0; R.pages = P;
+  $('#ru-title').textContent = `${b.year} · 阿墨的十月速寫本`;
+  hydrate(spread);
+}
+
+function setLeaf(lf, a, bend) {
+  lf.a = a;
+  lf.el.style.transform = `rotateY(${a.toFixed(2)}deg)`;
+  lf.out.style.transform = `rotateY(${bend.toFixed(2)}deg)`;
+  lf.el.style.setProperty('--sh', (Math.sin(Math.PI * Math.abs(a) / 180) * .55).toFixed(3));
+}
+
+/* dir = 1 往左翻（下一頁）；-1 往右翻回（上一頁） */
+function flipLeaf(i, dir, dur = 900) {
+  const lf = R.leaves[i], tk = ++lf.token;
+  const from = lf.a, to = dir > 0 ? -180 : 0;
+  const span = Math.abs(to - from) / 180;
+  lf.el.style.zIndex = ++zTop;
+  return tween(dur * Math.max(span, .3), e => {
+    if (lf.token !== tk) return false;
+    const a = lerp(from, to, e);
+    const bend = -dir * 32 * Math.sin(Math.PI * e) * (1 - e * .7) * span;   // 紙邊領先、落下時攤平
+    setLeaf(lf, a, bend);
+    if (i === 0 && R.shL) R.shL.classList.toggle('is-on', Math.abs(a) > 92);   // 封面翻過中線才出現左頁底
+  }).then(done => {
+    if (done && lf.token === tk) lf.el.style.zIndex = dir > 0 ? 10 + i : 100 - i;
+    return done;
+  });
+}
+
+function updateCounter() {
+  const left = 2 * (R.flipped - 1) + 1, total = R.pages.length;
+  $('#ru-count').innerHTML = `${pad2(left)}–${pad2(left + 1)} / ${pad2(total)}<small>第 ${R.flipped} / ${R.total} 跨頁</small>`;
+  $('[data-act="prev"]', $('#reader-ui')).disabled = R.flipped <= 1;
+  $('[data-act="next"]', $('#reader-ui')).disabled = R.flipped >= R.total;
+}
+function next() { if (state !== 'spread' || R.flipped >= R.total) return; flipLeaf(R.flipped, 1); R.flipped++; updateCounter(); }
+function prev() { if (state !== 'spread' || R.flipped <= 1) return; R.flipped--; flipLeaf(R.flipped, -1); updateCounter(); }
+
+/* --- 抽書：書背 → 封面置中 --- */
+async function openBook(i) {
+  if (state !== 'shelf') return;
+  setState('busy'); cur = i;
+  const b = BOOKS[i], el = bookEls[i];
+  layout();
+  buildFlyer(b); buildReader(b);
+  const r = el.querySelector('.spine').getBoundingClientRect();     // 含 hover 抬起的實際位置
+  const s0 = r.height / G.H;
+  F = { x: r.left + r.width / 2, y: r.top + r.height / 2, z: 0, ry: 90, s: s0, t: r.width / s0 };
+  applyFlyer();
+  flight.classList.add('is-on'); el.classList.add('is-out');
+  document.body.classList.add('is-open');
+
+  const y0 = F.y, lift = r.height * .42;
+  await tween(320, e => { F.y = y0 - lift * e; F.z = 40 * e; applyFlyer(); }, easeOutCubic);   // 往上抽出
+  const st = { ...F };
+  await tween(1050, (e, p) => {                                                                 // 飛到中央並轉正
+    const q = easeInOutCubic(clamp((p - .1) / .82));
+    F.x = lerp(st.x, G.cx, e); F.y = lerp(st.y, G.cy, e); F.s = lerp(st.s, 1, e);
+    F.ry = 90 * (1 - q); F.t = lerp(st.t, G.T1, q);
+    F.z = lerp(40, 0, e) + 150 * Math.sin(Math.PI * p);
+    applyFlyer();
+  });
+  setState('cover');
+  $('[data-act="open"]', $('#cover-ui')).focus({ preventScroll: true });
+}
+
+/* --- 翻開：封面 → 跨頁 --- */
+async function openSpread() {
+  if (state !== 'cover') return;
+  setState('busy');
+  const st = { ...F };
+  await tween(420, e => { F.x = lerp(st.x, G.cx + G.W / 2, e); F.y = lerp(st.y, G.cy, e); applyFlyer(); });
+  reader.classList.add('is-on'); reader.setAttribute('aria-hidden', 'false');
+  flight.classList.remove('is-on');
+  R.flipped = 1;
+  await flipLeaf(0, 1, 1150);
+  setState('spread'); updateCounter();
+  $('[data-act="next"]', $('#reader-ui')).focus({ preventScroll: true });
+}
+
+/* --- 回書架：闔書 → 轉回書背 → 滑回原位 --- */
+async function closeBook() {
+  if (state === 'spread') {
+    setState('busy');
+    const n = R.flipped, jobs = [];
+    R.flipped = 0;
+    for (let i = n - 1; i >= 0; i--) {
+      jobs.push(flipLeaf(i, -1, i === 0 ? 820 : 560));
+      if (i > 0) await wait(110);
+    }
+    await Promise.all(jobs);
+    F = { x: G.cx + G.W / 2, y: G.cy, z: 0, ry: 0, s: 1, t: G.T1 };
+    applyFlyer();
+    flight.classList.add('is-on');
+    reader.classList.remove('is-on'); reader.setAttribute('aria-hidden', 'true');
+  } else if (state === 'cover') {
+    setState('busy');
+  } else return;
+
+  const el = bookEls[cur], r = el.getBoundingClientRect();           // 原本的格位（未抬起）
+  const s0 = r.height / G.H, t0 = r.width / s0;
+  const tx = r.left + r.width / 2, ty = r.top + r.height / 2, lift = r.height * .42;
+  document.body.classList.remove('is-open');
+  const st = { ...F };
+  await tween(1050, (e, p) => {
+    const q = easeInOutCubic(clamp(p / .85));
+    F.x = lerp(st.x, tx, e); F.y = lerp(st.y, ty - lift, e); F.s = lerp(st.s, s0, e);
+    F.ry = lerp(st.ry, 90, q); F.t = lerp(st.t, t0, q);
+    F.z = lerp(st.z, 40, e) + 150 * Math.sin(Math.PI * p);
+    applyFlyer();
+  });
+  await tween(340, e => { F.y = lerp(ty - lift, ty, e); F.z = lerp(40, 0, e); applyFlyer(); }, easeInOutQuad);  // 插回書架
+  el.classList.remove('is-out');
+  flight.classList.remove('is-on');
+  flyer.innerHTML = ''; spread.innerHTML = ''; R.leaves = [];
+  setState('shelf');
+  el.focus({ preventScroll: true, focusVisible: false });
+}
+
+/* ============================================================
+   8. 事件
+   ============================================================ */
+flyer.addEventListener('click', openSpread);
+$('#backdrop').addEventListener('click', () => { if (state === 'cover') closeBook(); });
+document.addEventListener('click', e => {
+  const act = e.target.closest('[data-act]')?.dataset.act;
+  if (!act) return;
+  ({ open: openSpread, close: closeBook, next, prev })[act]?.();
+});
+spread.addEventListener('click', e => {
+  if (state !== 'spread') return;
+  const r = spread.getBoundingClientRect();
+  (e.clientX > r.left + r.width / 2) ? next() : prev();
+});
+addEventListener('keydown', e => {
+  if (state === 'spread') {
+    if (e.key === 'ArrowRight') { e.preventDefault(); next(); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+    else if (e.key === 'Escape') closeBook();
+  } else if (state === 'cover') {
+    if (e.key === 'Escape') closeBook();
+    else if ((e.key === 'Enter' || e.key === ' ') && !e.target.closest('button')) { e.preventDefault(); openSpread(); }
+  }
+});
+/* 開書時鎖住頁面捲動（不用 overflow:hidden，避免捲軸消失造成版面位移） */
+const blockScroll = e => { if (state !== 'shelf') e.preventDefault(); };
+addEventListener('wheel', blockScroll, { passive: false });
+addEventListener('touchmove', blockScroll, { passive: false });
+addEventListener('keydown', e => {
+  if (state !== 'shelf' && [' ', 'PageUp', 'PageDown', 'Home', 'End', 'ArrowUp', 'ArrowDown'].includes(e.key) && !e.target.closest('button')) e.preventDefault();
+});
+addEventListener('resize', () => {
+  layout();
+  if (state === 'cover') { F.x = G.cx; F.y = G.cy; applyFlyer(); }
+});
+
+/* 導覽列：捲到「關於」時切換底線 */
+const navLinks = document.querySelectorAll('.nav a');
+new IntersectionObserver(ents => ents.forEach(en => {
+  if (en.isIntersecting) navLinks.forEach(a => a.classList.toggle('is-active', a.getAttribute('href') === '#' + en.target.id));
+}), { threshold: .45 }).observe($('#about'));
+new IntersectionObserver(ents => ents.forEach(en => {
+  if (en.isIntersecting) navLinks.forEach(a => a.classList.toggle('is-active', a.getAttribute('href') === '#top'));
+}), { threshold: .55 }).observe($('#top'));
+
+/* 啟動 */
+layout();
+buildDecor();
+buildShelf();
+BOOKS.forEach(b => resolveImg('cover_' + b.year));   // 預先探測封面
+})();
+</script>
+</body>
+</html>
