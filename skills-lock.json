@@ -199,6 +199,13 @@
       "skillPath": "skills/react-native-skills/SKILL.md",
       "computedHash": "2e9088a7333666d8c2833b8ff58bd51b955501c42b4c7244f72b4cbf22dafcc4"
     },
+    "vgpu": {
+      "source": "vercel-labs/vgpu",
+      "commit": "773351f8c96d1cbec28155c0e36ae3efd1cba135",
+      "sourceType": "github",
+      "skillPath": "skills/vgpu/SKILL.md",
+      "computedHash": "25243677724965329fefbe55a0e7abbaeb6564b449f65c011c985f3f2125ac3a"
+    },
     "web-design-guidelines": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
