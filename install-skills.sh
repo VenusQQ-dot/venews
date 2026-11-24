@@ -25,5 +25,6 @@ npx -y skills add ibelick/ui-skills --skill '*' $FLAGS
 npx -y skills add https://github.com/anthropics/skills --skill pdf $FLAGS
 npx -y skills add https://github.com/coreyhaines31/marketingskills --skill seo-audit $FLAGS
 npx -y skills add https://github.com/sanyuan0704/code-review-expert --skill code-review-expert $FLAGS
+npx -y skills add vercel-labs/vgpu --skill vgpu $FLAGS
 
 echo "全部安裝完成!Skills 位於 ./.claude/skills/"
