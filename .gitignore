@@ -40,3 +40,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# 大型影片 skills(由 install-video-tools.sh 安裝,不進 repo)
+/.claude/skills/onetake/
+/.claude/skills/vox-director/

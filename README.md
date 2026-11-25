@@ -89,6 +89,11 @@ npm run dev
 - `slug` — 文章唯一識別碼(自動產生或自訂)
 - 其他欄位皆選用,留空時使用預設值
 
+## Claude Code 影片製作工具(選用)
+
+`bash install-video-tools.sh` 一次安裝 HyperFrames、onetake、vox-director、ClaudeAnimationBase、
+Lemo-Opuscar。用途、授權(部分為非商用)與 Prompt 範本見 [`docs/video-tools.md`](docs/video-tools.md)。
+
 ## 部署到 Vercel
 
 [vercel.com](https://vercel.com) → Import 此 repo → 加入上面四個環境變數 → Deploy。
